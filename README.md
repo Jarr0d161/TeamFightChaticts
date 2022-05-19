@@ -21,6 +21,7 @@ Das GIT-Repository beinhaltet einen Twitch-Chat-Bot, welcher Chatnachrichten in 
   * Eingabe: **python3 coding/TFTwitch.py**)
 * Pool-Größe (Anzahl gleicher Nachrichten) eintragen und Start drücken
 * Stop trennt die Verbindung zum TwitchChat
+* Hinweis: Viele Werte sind aktuell noch "hardcoded" auf 1900x1080p, beim Starten von TFT beachten!
 
 ## Befehle im Chat
 
