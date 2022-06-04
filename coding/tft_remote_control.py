@@ -3,6 +3,7 @@ import time
 import math
 import threading
 from typing import Tuple, List
+from enum import IntEnum
 import pyautogui
 
 from .tft_screen_capture import capture_level, capture_gold, capture_item_locations
@@ -37,20 +38,56 @@ class MouseRemoteControl:
         pyautogui.mouseUp(button="left")
 
 
+class TwitchTFTCmdType(IntEnum):
+    INVALID=0
+    SHOP=1
+    PICK_AUGMENT=2
+    LOCK_OR_UNLOCK=3
+    PICK_ITEM_KARUSSELL=4
+    COLLECT_ALL_ITEMS_DROPPED=5
+    LEVELUP=6
+    ROLL_SHOP=7
+    SELL_UNIT=8
+    PLACE_UNIT=9
+    COLLECT_ITEMS_OF_ROW=10
+    ATTACH_ITEM=11
+
+
+REGEX_OF_CMD_TYPE = {
+    TwitchTFTCmdType.SHOP: '^shop[1-5]$',
+    TwitchTFTCmdType.PICK_AUGMENT: '^aug[1-3]$',
+    TwitchTFTCmdType.LOCK_OR_UNLOCK: '^(lock|unlock)$',
+    TwitchTFTCmdType.PICK_ITEM_KARUSSELL: '^now$',
+    TwitchTFTCmdType.COLLECT_ALL_ITEMS_DROPPED: '^collect$',
+    TwitchTFTCmdType.LEVELUP: '^(lvl|lvlup)$',
+    TwitchTFTCmdType.ROLL_SHOP: '^(roll|reroll)$',
+    TwitchTFTCmdType.SELL_UNIT: '^sellw[0-9]$',
+    TwitchTFTCmdType.PLACE_UNIT: '^(w[0-9]|[lbgr][1-7]){2}$',
+    TwitchTFTCmdType.COLLECT_ITEMS_OF_ROW: '^row[1-8]$',
+    TwitchTFTCmdType.ATTACH_ITEM: '^[a-j]w[0-9]$',
+}
+
+
+def determine_twitch_cmd_type(message: str) -> TwitchTFTCmdType:
+    for type in REGEX_OF_CMD_TYPE:
+        if re.match(REGEX_OF_CMD_TYPE[type], message):
+            return type
+    return TwitchTFTCmdType.INVALID
+
+
 class TFTRemoteControl:
     def __init__(self):
         self.row_1=[(580,670),(710,670),(840,670),(970,670),(1100,670),(1230,670),(1360,670)]
         self.row_2=[(530,590),(660,590),(790,590),(900,590),(1025,590),(1150,590),(1275,590)]
         self.row_3=[(610,515),(730,515),(850,515),(965,515),(1080,515),(1200,515),(1315,515)]
         self.row_4=[(560,430),(680,430),(790,430),(905,430),(1025,430),(1140,430),(1250,430)]
-        # self.reihe5=[(580,370),(710,370),(840,370),(970,370),(1100,370),(1230,370),(1340,370)]
-        # self.reihe6=[(560,315),(660,315),(790,315),(900,315),(1025,315),(1150,315),(1310,315)]
-        # self.reihe7=[(550,240),(730,240),(850,240),(965,240),(1080,240),(1200,240),(1315,240)]
-        # self.reihe8=[(590,175),(680,175),(790,175),(905,175),(1025,175),(1140,175),(1250,175)]
-        # info: positions on opponent's side of the board are never used to place own units
+        self.reihe5=[(580,370),(710,370),(840,370),(970,370),(1100,370),(1230,370),(1340,370)]
+        self.reihe6=[(560,315),(660,315),(790,315),(900,315),(1025,315),(1150,315),(1310,315)]
+        self.reihe7=[(550,240),(730,240),(850,240),(965,240),(1080,240),(1200,240),(1315,240)]
+        self.reihe8=[(590,175),(680,175),(790,175),(905,175),(1025,175),(1140,175),(1250,175)]
         self.bench=[(420,780),(540,780),(660,780),(780,780),(900,780),(1020,780),(1140,780),(1260,780),(1380,780)]
         self.augmentlist= [(590,500),(960,500),(1320,500)]
-        self.Rowlist= [self.bench,self.row_1,self.row_2,self.row_3,self.row_4]#,self.reihe5,self.reihe6,self.reihe7,self.reihe8]
+        self.Rowlist= [self.bench,self.row_1,self.row_2,self.row_3,self.row_4,self.reihe5,self.reihe6,self.reihe7,self.reihe8]
         self.itemlist = [(290,755),(335,725),(310,705),(350,660),(410,665),(325,630),(385,630),(445,630),(340,590),(395,590)]
         self.shoplist=[(570,1000),(770,1000),(970,1000),(1170,1000),(1370,1000)]
         self.comlist = [(370,980),(370,1060)]
@@ -58,29 +95,24 @@ class TFTRemoteControl:
         self.item_whitelist = ["a","b","c","d","e","f","g","h","i","j"]
         # TODO: don't put the Twitch commands here, this should be abstracted away ...
 
+        self.cmd_handlers = {
+            TwitchTFTCmdType.SHOP: self.handle_shop_cmd,
+            TwitchTFTCmdType.PICK_AUGMENT: self.handle_augment_cmd,
+            TwitchTFTCmdType.LOCK_OR_UNLOCK: self.handle_lock_or_unlock_cmd,
+            TwitchTFTCmdType.PICK_ITEM_KARUSSELL: self.handle_karussell_cmd,
+            TwitchTFTCmdType.COLLECT_ALL_ITEMS_DROPPED: self.handle_collect_cmd,
+            TwitchTFTCmdType.LEVELUP: self.handle_levelup_cmd,
+            TwitchTFTCmdType.ROLL_SHOP: self.handle_roll_cmd,
+            TwitchTFTCmdType.SELL_UNIT: self.handle_sellw_cmd,
+            TwitchTFTCmdType.PLACE_UNIT: self.handle_place_unit_cmd,
+            TwitchTFTCmdType.COLLECT_ITEMS_OF_ROW: self.handle_collect_items_cmd,
+            TwitchTFTCmdType.ATTACH_ITEM: self.handle_attach_item_cmd,
+        }
+
     def gamecontrol(self, message=''):
-        if self.is_shop_cmd(message):
-            self.handle_shop_cmd(message)
-        elif self.is_augment_cmd(message):
-            self.handle_augment_cmd(message)
-        elif self.is_lock_or_unlock_cmd(message):
-            self.handle_lock_or_unlock_cmd(message)
-        elif self.is_karussell_cmd(message):
-            self.handle_karussell_cmd(message)
-        elif self.is_collect_cmd(message):
-            self.handle_collect_cmd(message)
-        elif self.is_levelup_cmd(message):
-            self.handle_levelup_cmd(message)
-        elif self.is_roll_cmd(message):
-            self.handle_roll_cmd(message)
-        elif self.is_sellw_cmd(message):
-            self.handle_sellw_cmd(message)
-        elif self.is_place_unit_cmd(message):
-            self.handle_place_unit_cmd(message)
-        elif self.is_collect_items_cmd(message):
-            self.handle_collect_items_cmd(message)
-        elif self.is_attach_item_cmd(message):
-            self.handle_attach_item_cmd(message)
+        cmd_type = determine_twitch_cmd_type(message)
+        if cmd_type in self.cmd_handlers:
+            self.cmd_handlers[cmd_type](message)
 
     def compute_item_drop_positions(self) -> list:
         OFFSET = 30
@@ -119,33 +151,21 @@ class TFTRemoteControl:
         pyautogui.click(self.shoplist[z], button='left')
         pyautogui.mouseUp(button='left')
 
-    def is_shop_cmd(self, message: str) -> bool:
-        return re.match('^shop[1-5]$', message)
-
     def handle_augment_cmd(self, message: str):
         self.click_in()
         selected_augment = self.augmentlist[int(message[3])-1]
         pyautogui.click(selected_augment)
         pyautogui.mouseUp(button='left')
 
-    def is_augment_cmd(self, message: str) -> bool:
-        return re.match('^aug[1-3]$', message)
-
     def handle_lock_or_unlock_cmd(self, message: str):
         self.click_in()
         pyautogui.click(1450, 900, button='left')
         pyautogui.mouseUp(button='left')
 
-    def is_lock_or_unlock_cmd(self, message: str) -> bool:
-        return re.match('^(lock|unlock)$', message)
-
     def handle_karussell_cmd(self, message: str):
         self.click_in()
         pyautogui.click(950, 370, button='right')
         pyautogui.mouseUp(button='right')
-
-    def is_karussell_cmd(self, message: str) -> bool:
-        return re.match('^now$', message)
 
     def handle_collect_cmd(self, message: str):
         self.click_in()
@@ -155,9 +175,6 @@ class TFTRemoteControl:
             # TODO: remove multithreading, this can lead to very weird behavior if the mouse is used for another command
             t2 = threading.Thread(target = self.collect_dropped_items_at, args=(items,))
             t2.start()
-
-    def is_collect_cmd(self, message: str) -> bool:
-        return re.match('^collect$', message)
 
     def handle_levelup_cmd(self, message: str):
         level = capture_level()
@@ -181,16 +198,10 @@ class TFTRemoteControl:
 
         self.click_in()
 
-    def is_levelup_cmd(self, message: str) -> bool:
-        return re.match('^(lvl|lvlup)$', message)
-
     def handle_roll_cmd(self, message: str):
         pyautogui.click(375,1045)
         pyautogui.mouseUp(button="left")
         self.click_in()
-
-    def is_roll_cmd(self, message: str) -> bool:
-        return re.match('^(roll|reroll)$', message)
 
     def handle_sellw_cmd(self, message: str):
         self.click_in()
@@ -201,9 +212,6 @@ class TFTRemoteControl:
         pyautogui.mouseUp(button='left')
         pyautogui.moveTo(z)
 
-    def is_sellw_cmd(self, message: str) -> bool:
-        return re.match('^sellw[0-9]$', message)
-
     def handle_place_unit_cmd(self, message: str):
         self.click_in()
         origin = str(message[0:2])
@@ -212,9 +220,6 @@ class TFTRemoteControl:
         pyautogui.mouseDown(button='left')
         pyautogui.moveTo(self.position_by_field_id(aim))
         pyautogui.mouseUp(button='left')
-
-    def is_place_unit_cmd(self, message: str) -> bool:
-        return re.match('^(w[0-9]|[lbgr][1-7]){2}$', message)
 
     def handle_collect_items_cmd(self, message: str):
         self.click_in()
@@ -228,52 +233,22 @@ class TFTRemoteControl:
         pyautogui.click(temp,button='right')
         pyautogui.mouseUp(button='right')
 
-    def is_collect_items_cmd(self, message: str) -> bool:
-        return re.match('^row[1-8]$', message)
-
     def handle_attach_item_cmd(self, message: str):
         self.click_in()
-        slot = str(message[0:1])
-        if slot == "a":
-            pyautogui.moveTo(self.itemlist[0])
-        if slot == "b":
-            pyautogui.moveTo(self.itemlist[1])
-        if slot == "c":
-            pyautogui.moveTo(self.itemlist[2])
-        if slot == "d":
-            pyautogui.moveTo(self.itemlist[3])
-        if slot == "e":
-            pyautogui.moveTo(self.itemlist[4])
-        if slot == "f":
-            pyautogui.moveTo(self.itemlist[5])
-        if slot == "g":
-            pyautogui.moveTo(self.itemlist[6])
-        if slot == "h":
-            pyautogui.moveTo(self.itemlist[7])
-        if slot == "i":
-            pyautogui.moveTo(self.itemlist[8])
-        if slot == "j":
-            pyautogui.moveTo(self.itemlist[9])
+        slot = str(message[0])
+        slot_char = slot.encode()[0]
+        index = slot_char - "a".encode()[0]
+        pyautogui.moveTo(self.itemlist[index])
         pyautogui.mouseDown(button='left')
         pyautogui.moveTo(self.position_by_field_id(message[1:]))
         pyautogui.mouseUp(button='left')
 
-    def is_attach_item_cmd(self, message: str) -> bool:
-        return re.match('^[a-j]w[0-9]$', message)
-
     def position_by_field_id(self, field_id: str) -> Tuple[int, int]:
-        if len(field_id) != 2 or not field_id[0].isalpha() \
-                or not field_id[1].isdecimal():
-            return None
-
         row = field_id[0:1]
         col = int(field_id[1:2])
 
         if row.startswith('w'):
             return self.bench[col-1]
-
-        if col >= 8:
-            return None
         if row.startswith('l'):
             return self.row_1[col-1]
         if row.startswith('b'):
