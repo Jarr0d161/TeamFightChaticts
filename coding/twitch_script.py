@@ -162,16 +162,6 @@ class TwitchBot:
         self.irc.send(msgg)
         print(msgg)
 
-    def validate_tft_command(self, tft_cmd: str):
-        bench_pos = [f'w{i}' for i in range(10)]
-        row_1_pos = [f'l{i}' for i in range(1, 8)]
-        row_2_pos = [f'b{i}' for i in range(1, 8)]
-        row_3_pos = [f'g{i}' for i in range(1, 8)]
-        row_4_pos = [f'r{i}' for i in range(1, 8)]
-        item_slots = ["a","b","c","d","e","f","g","h","i","j"]
-
-        pass
-
     def execute_tft_command(self, line: str):
         try:
             user = self.parse_submitting_user(line)
@@ -181,7 +171,9 @@ class TwitchBot:
             self.message = message = message.lower()
             if not self.rein and not self.chaos:
                 self.add_message(message)
-            self.tft_remote_control.gamecontrol(message)
+            else:
+                self.tft_remote_control.gamecontrol(message)
+                self.reset_vars()
 
             if self.voll and not self.chaos:
                 if message != self.old_message:
@@ -193,7 +185,9 @@ class TwitchBot:
                     self.message = message = message.lower()
                     if not self.rein and not self.chaos:
                         self.add_message(message)
-                    self.tft_remote_control.gamecontrol(message)
+                    else:
+                        self.tft_remote_control.gamecontrol(message)
+                        self.reset_vars()
                 else:
                     print('Befehl wird nicht wiederholt!')
                     self.messagelist = list(filter((message).__ne__, self.messagelist))

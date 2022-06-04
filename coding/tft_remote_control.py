@@ -118,45 +118,34 @@ class TFTRemoteControl:
         z = int(message[4:]) - 1
         pyautogui.click(self.shoplist[z], button='left')
         pyautogui.mouseUp(button='left')
-        self.reset_vars()
 
     def is_shop_cmd(self, message: str) -> bool:
-        return message.startswith('shop') \
-            and message[-1].isdigit() \
-            and len(message) < 6 \
-            and 0 < int(message[-1]) < 6
+        return re.match('^shop[1-5]$', message)
 
     def handle_augment_cmd(self, message: str):
         self.click_in()
         selected_augment = self.augmentlist[int(message[3])-1]
         pyautogui.click(selected_augment)
         pyautogui.mouseUp(button='left')
-        self.reset_vars()
 
     def is_augment_cmd(self, message: str) -> bool:
-        # TODO: use a regex to match the command, e.g. ^aug[1-3]$
-        return message.startswith('aug') \
-            and message[-1].isdigit() \
-            and len(message) == 4 \
-            and 0 < int(message[-1]) < 4
+        return re.match('^aug[1-3]$', message)
 
     def handle_lock_or_unlock_cmd(self, message: str):
         self.click_in()
         pyautogui.click(1450, 900, button='left')
         pyautogui.mouseUp(button='left')
-        self.reset_vars()
 
     def is_lock_or_unlock_cmd(self, message: str) -> bool:
-        return message in ['lock', 'unlock']
+        return re.match('^(lock|unlock)$', message)
 
     def handle_karussell_cmd(self, message: str):
         self.click_in()
         pyautogui.click(950, 370, button='right')
         pyautogui.mouseUp(button='right')
-        self.reset_vars()
 
     def is_karussell_cmd(self, message: str) -> bool:
-        return message == "now"
+        return re.match('^now$', message)
 
     def handle_collect_cmd(self, message: str):
         self.click_in()
@@ -166,10 +155,9 @@ class TFTRemoteControl:
             # TODO: remove multithreading, this can lead to very weird behavior if the mouse is used for another command
             t2 = threading.Thread(target = self.collect_dropped_items_at, args=(items,))
             t2.start()
-        self.reset_vars()
 
     def is_collect_cmd(self, message: str) -> bool:
-        return message == 'collect'
+        return re.match('^collect$', message)
 
     def handle_levelup_cmd(self, message: str):
         level = capture_level()
@@ -191,20 +179,18 @@ class TFTRemoteControl:
             pyautogui.mouseUp(button="left")
             levelup_clicks -= 1
 
-        self.click_in()            
-        self.reset_vars()
+        self.click_in()
 
     def is_levelup_cmd(self, message: str) -> bool:
-        return message in ['lvl', 'lvlup']
+        return re.match('^(lvl|lvlup)$', message)
 
     def handle_roll_cmd(self, message: str):
         pyautogui.click(375,1045)
         pyautogui.mouseUp(button="left")
         self.click_in()
-        self.reset_vars()
 
     def is_roll_cmd(self, message: str) -> bool:
-        return message in ['roll', 'reroll']
+        return re.match('^(roll|reroll)$', message)
 
     def handle_sellw_cmd(self, message: str):
         self.click_in()
@@ -214,13 +200,9 @@ class TFTRemoteControl:
         pyautogui.moveTo(self.shoplist[2])
         pyautogui.mouseUp(button='left')
         pyautogui.moveTo(z)
-        self.reset_vars()
 
     def is_sellw_cmd(self, message: str) -> bool:
-        return message.startswith('sellw') and len(message) < 7 \
-            and message[4:5] in self.farblist \
-            and message[-1].isdigit() and int(message[-1]) > 0 \
-            and (message[4:6] in ["w8", "w9"] or 0 < int(message[-1]) < 8)
+        return re.match('^sellw[0-9]$', message)
 
     def handle_place_unit_cmd(self, message: str):
         self.click_in()
@@ -230,13 +212,9 @@ class TFTRemoteControl:
         pyautogui.mouseDown(button='left')
         pyautogui.moveTo(self.position_by_field_id(aim))
         pyautogui.mouseUp(button='left')
-        self.reset_vars()
 
     def is_place_unit_cmd(self, message: str) -> bool:
-        return len(message) < 5 and message[0:1] in self.farblist and message[1:2].isnumeric() \
-            and message[2:3] in self.farblist and message[3:4].isnumeric() \
-            and (message[2:4] == "w8" or message[2:4] == "w9" or 1 <= int(message[-1]) <= 7) \
-            and (message[0:2] == "w8" or message[0:2] == "w9" or 1 <= int(message[1:2]) <= 7)
+        return re.match('^(w[0-9]|[lbgr][1-7]){2}$', message)
 
     def handle_collect_items_cmd(self, message: str):
         self.click_in()
@@ -249,11 +227,9 @@ class TFTRemoteControl:
         print(temp, type(temp))
         pyautogui.click(temp,button='right')
         pyautogui.mouseUp(button='right')
-        self.reset_vars()
 
     def is_collect_items_cmd(self, message: str) -> bool:
-        return message.startswith('row') and len(message) < 5 \
-            and message[-1].isdigit() and 0 < int(message[-1]) < 9
+        return re.match('^row[1-8]$', message)
 
     def handle_attach_item_cmd(self, message: str):
         self.click_in()
@@ -281,12 +257,9 @@ class TFTRemoteControl:
         pyautogui.mouseDown(button='left')
         pyautogui.moveTo(self.position_by_field_id(message[1:]))
         pyautogui.mouseUp(button='left')
-        self.reset_vars()
 
     def is_attach_item_cmd(self, message: str) -> bool:
-        return message[0:1] in self.item_whitelist and message[1:2] in self.farblist \
-            and len(message) < 4 and message[-1].isdigit() \
-            and message[1:3] == "w8" or message[1:3] == "w9" or 0 < int(message[-1]) < 8
+        return re.match('^[a-j]w[0-9]$', message)
 
     def position_by_field_id(self, field_id: str) -> Tuple[int, int]:
         if len(field_id) != 2 or not field_id[0].isalpha() \
