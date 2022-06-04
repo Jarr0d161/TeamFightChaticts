@@ -18,28 +18,7 @@ class TwitchBot:
         self.chaos = chaos
         self.voll = False
 
-        self.tft_remote_control = TFTRemoteControl
-
-        """
-        Mapping für Brettfelder
-        """
-        self.row_1=[(580,670),(710,670),(840,670),(970,670),(1100,670),(1230,670),(1360,670)]
-        self.row_2=[(530,590),(660,590),(790,590),(900,590),(1025,590),(1150,590),(1275,590)]
-        self.row_3=[(610,515),(730,515),(850,515),(965,515),(1080,515),(1200,515),(1315,515)]
-        self.row_4=[(560,430),(680,430),(790,430),(905,430),(1025,430),(1140,430),(1250,430)]
-        # self.reihe5=[(580,370),(710,370),(840,370),(970,370),(1100,370),(1230,370),(1340,370)]
-        # self.reihe6=[(560,315),(660,315),(790,315),(900,315),(1025,315),(1150,315),(1310,315)]
-        # self.reihe7=[(550,240),(730,240),(850,240),(965,240),(1080,240),(1200,240),(1315,240)]
-        # self.reihe8=[(590,175),(680,175),(790,175),(905,175),(1025,175),(1140,175),(1250,175)]
-        # info: positions on opponent's side of the board are never used to place own units
-        self.bench=[(420,780),(540,780),(660,780),(780,780),(900,780),(1020,780),(1140,780),(1260,780),(1380,780)]
-        self.augmentlist= [(590,500),(960,500),(1320,500)]
-        self.Rowlist= [self.bench,self.row_1,self.row_2,self.row_3,self.row_4]#,self.reihe5,self.reihe6,self.reihe7,self.reihe8]
-        self.itemlist = [(290,755),(335,725),(310,705),(350,660),(410,665),(325,630),(385,630),(445,630),(340,590),(395,590)]
-        self.shoplist=[(570,1000),(770,1000),(970,1000),(1170,1000),(1370,1000)]
-        self.comlist = [(370,980),(370,1060)]
-        self.farblist=["w","l","b","g","r"]
-        self.itemWhitelist = ["a","b","c","d","e","f","g","h","i","j"]
+        self.tft_remote_control = TFTRemoteControl()
 
         """
         IRC Verbindungaufbauen

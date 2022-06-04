@@ -38,7 +38,7 @@ class MouseRemoteControl:
         pyautogui.mouseUp(button="left")
 
 
-class TwitchTFTCmdType(IntEnum):
+class TFTCmdType(IntEnum):
     INVALID=0
     SHOP=1
     PICK_AUGMENT=2
@@ -54,25 +54,25 @@ class TwitchTFTCmdType(IntEnum):
 
 
 REGEX_OF_CMD_TYPE = {
-    TwitchTFTCmdType.SHOP: '^shop[1-5]$',
-    TwitchTFTCmdType.PICK_AUGMENT: '^aug[1-3]$',
-    TwitchTFTCmdType.LOCK_OR_UNLOCK: '^(lock|unlock)$',
-    TwitchTFTCmdType.PICK_ITEM_KARUSSELL: '^now$',
-    TwitchTFTCmdType.COLLECT_ALL_ITEMS_DROPPED: '^collect$',
-    TwitchTFTCmdType.LEVELUP: '^(lvl|lvlup)$',
-    TwitchTFTCmdType.ROLL_SHOP: '^(roll|reroll)$',
-    TwitchTFTCmdType.SELL_UNIT: '^sellw[0-9]$',
-    TwitchTFTCmdType.PLACE_UNIT: '^(w[0-9]|[lbgr][1-7]){2}$',
-    TwitchTFTCmdType.COLLECT_ITEMS_OF_ROW: '^row[1-8]$',
-    TwitchTFTCmdType.ATTACH_ITEM: '^[a-j]w[0-9]$',
+    TFTCmdType.SHOP: '^shop[1-5]$',
+    TFTCmdType.PICK_AUGMENT: '^aug[1-3]$',
+    TFTCmdType.LOCK_OR_UNLOCK: '^(lock|unlock)$',
+    TFTCmdType.PICK_ITEM_KARUSSELL: '^now$',
+    TFTCmdType.COLLECT_ALL_ITEMS_DROPPED: '^collect$',
+    TFTCmdType.LEVELUP: '^(lvl|lvlup)$',
+    TFTCmdType.ROLL_SHOP: '^(roll|reroll)$',
+    TFTCmdType.SELL_UNIT: '^sellw[0-9]$',
+    TFTCmdType.PLACE_UNIT: '^(w[0-9]|[lbgr][1-7]){2}$',
+    TFTCmdType.COLLECT_ITEMS_OF_ROW: '^row[1-8]$',
+    TFTCmdType.ATTACH_ITEM: '^[a-j]w[0-9]$',
 }
 
 
-def determine_twitch_cmd_type(message: str) -> TwitchTFTCmdType:
+def determine_twitch_cmd_type(message: str) -> TFTCmdType:
     for type in REGEX_OF_CMD_TYPE:
         if re.match(REGEX_OF_CMD_TYPE[type], message):
             return type
-    return TwitchTFTCmdType.INVALID
+    return TFTCmdType.INVALID
 
 
 class TFTRemoteControl:
@@ -96,17 +96,17 @@ class TFTRemoteControl:
         # TODO: don't put the Twitch commands here, this should be abstracted away ...
 
         self.cmd_handlers = {
-            TwitchTFTCmdType.SHOP: self.handle_shop_cmd,
-            TwitchTFTCmdType.PICK_AUGMENT: self.handle_augment_cmd,
-            TwitchTFTCmdType.LOCK_OR_UNLOCK: self.handle_lock_or_unlock_cmd,
-            TwitchTFTCmdType.PICK_ITEM_KARUSSELL: self.handle_karussell_cmd,
-            TwitchTFTCmdType.COLLECT_ALL_ITEMS_DROPPED: self.handle_collect_cmd,
-            TwitchTFTCmdType.LEVELUP: self.handle_levelup_cmd,
-            TwitchTFTCmdType.ROLL_SHOP: self.handle_roll_cmd,
-            TwitchTFTCmdType.SELL_UNIT: self.handle_sellw_cmd,
-            TwitchTFTCmdType.PLACE_UNIT: self.handle_place_unit_cmd,
-            TwitchTFTCmdType.COLLECT_ITEMS_OF_ROW: self.handle_collect_items_cmd,
-            TwitchTFTCmdType.ATTACH_ITEM: self.handle_attach_item_cmd,
+            TFTCmdType.SHOP: self.handle_shop_cmd,
+            TFTCmdType.PICK_AUGMENT: self.handle_augment_cmd,
+            TFTCmdType.LOCK_OR_UNLOCK: self.handle_lock_or_unlock_cmd,
+            TFTCmdType.PICK_ITEM_KARUSSELL: self.handle_karussell_cmd,
+            TFTCmdType.COLLECT_ALL_ITEMS_DROPPED: self.handle_collect_cmd,
+            TFTCmdType.LEVELUP: self.handle_levelup_cmd,
+            TFTCmdType.ROLL_SHOP: self.handle_roll_cmd,
+            TFTCmdType.SELL_UNIT: self.handle_sellw_cmd,
+            TFTCmdType.PLACE_UNIT: self.handle_place_unit_cmd,
+            TFTCmdType.COLLECT_ITEMS_OF_ROW: self.handle_collect_items_cmd,
+            TFTCmdType.ATTACH_ITEM: self.handle_attach_item_cmd,
         }
 
     def gamecontrol(self, message=''):
