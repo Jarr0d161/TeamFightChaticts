@@ -1,7 +1,7 @@
 import tkinter as tk
 import tkinter.font as tkFont
 
-import TwitchScript as ts
+from .twitch_script import TwitchBot
 
 class TwitchBotGUI(tk.Frame):
     def __init__(self, parent, width=518, height=180, *args, **kwargs):
@@ -84,7 +84,7 @@ class TwitchBotGUI(tk.Frame):
     
     def startButton(self):
         
-        self.someBot = ts.TwitchBot(False, self.pool)
+        self.someBot = TwitchBot(False, self.pool)
         self.someBot.start_bot()
         print("Gestartet")
         self.state = True
