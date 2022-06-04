@@ -11,6 +11,29 @@ import os
 
 import pandas as pd
 
+def select_gui_output_language(language):
+    if language == "de":
+        return gui_output_dict_deutsch
+    elif language == "en":
+        return gui_output_dict_english
+
+gui_output_dict_english = {
+    "tesseractErr": "The path for Tesseract is not correct!",
+    "pool": "Pool is at:",
+    "decodeString": "Could not be executed",
+    "loadingComplete": "Twitch bot runs at ",
+    "foundCommand": "Found command: ",
+    "commandWontRepeat": "Command will not be repeated",
+}
+
+gui_output_dict_deutsch = {
+    "tesseractErr": "Der Pfad für Tesseract ist nicht korrekt!",
+    "pool": "Pool ist bei:",
+    "decodeString": "Konnte nicht ausgeführt werden",
+    "loadingComplete": "TwitchBot ist am Start in ",
+    "foundCommand": "Erkannter Befehl: ",
+    "commandWontRepeat": "Befehl wird nicht wiederholt!",
+}
 
 class TwitchBot:
 
@@ -21,6 +44,8 @@ class TwitchBot:
         """
         pyautogui.FAILSAFE = False
         self.confList = TwitchBot.readConfig()
+        self.guiOutput = select_gui_output_language(self.confList.loc["language"]["value"])
+
         self.chaos = chaos
         self.voll = False
         
@@ -28,7 +53,7 @@ class TwitchBot:
         isExist = os.path.exists(file_path)
                 
         if isExist: pytesseract.pytesseract.tesseract_cmd = file_path
-        else: raise ValueError('Der Pfad für Tesseract ist nicht korrekt!')
+        else: raise ValueError(self.guiOutput["tesseractErr"])
         
         
         """
@@ -82,7 +107,7 @@ class TwitchBot:
         self.old_message = ''
         self.user = ""
         self.pool = pool
-        print("Pool ist bei: "+str(self.pool))
+        print(self.guiOutput['pool']+str(self.pool))
         self.counter = self.pool
         self.tempCount = 0
         self.messagelist=[]
@@ -137,7 +162,7 @@ class TwitchBot:
                 return self.banklist[y-1]
 
         except:
-            print("Konnte nicht ausgeführt werden")
+            print(self.guiOutput['decodeString'])
             self.message=""
             
       
@@ -289,7 +314,7 @@ class TwitchBot:
     def loadingComplete(self,line) -> bool:
         
         if("End of /NAMES list" in line):
-            print("TwitchBot ist am Start in " + self.CHANNEL + "' Channel!")
+            print(self.guiOutput['loadingComplete'] + self.CHANNEL + "' Channel!")
             return False
         else:
             return True
@@ -549,14 +574,14 @@ class TwitchBot:
         
         if self.voll and not self.chaos:
             if self.message != self.old_message:
-                print("Erkannter Befeh:", self.message)
+                print(self.guiOutput['foundCommand'], self.message)
                 self.rein = True
                 self.voll = False
                 self.messagelist.clear()
                 self.old_message = self.message
                 self.gamecontrol(self.message)
             else:
-                print('Befehl wird nicht wiederholt!')
+                print(self.guiOutput['commandWontRepeat'])
                 self.messagelist = list(filter((self.message).__ne__, self.messagelist))
                 print(self.messagelist)
                 self.resetVars()

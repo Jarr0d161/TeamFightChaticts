@@ -1,3 +1,4 @@
 tesseract=C:\Program Files\Tesseract-OCR
 auth=oauth:ZahlenUndBuchstaben
 channel=ChannelName
+language=de
