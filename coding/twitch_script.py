@@ -1,40 +1,26 @@
-import os
+import math
+from typing import Tuple, List
 import socket
 import threading
 import pyautogui
 import time
 import collections
-from PIL import ImageGrab
 
-import cv2
-import pytesseract
-import numpy as np
-import pandas as pd
-
-from TFTScreenCapture import get_level_text, get_gold_text
+from .settings import read_config
+from .tft_screen_capture import capture_level, capture_gold, capture_item_locations
 
 
 class TwitchBot:
 
     def __init__(self, chaos=False, pool=10):
-        
         """
         Config laden
         """
         pyautogui.FAILSAFE = False
-        self.confList = TwitchBot.readConfig()
+
         self.chaos = chaos
         self.voll = False
-        
-        file_path = os.path.join(self.confList.loc['tesseract'][0], 'tesseract.exe')
-        isExist = os.path.exists(file_path)
-                
-        if os.path.exists(file_path):
-            pytesseract.pytesseract.tesseract_cmd = file_path
-        else:
-            raise ValueError('Der Pfad für Tesseract ist nicht korrekt!')
-        
-        
+
         """
         Mapping für Brettfelder
         """
@@ -55,22 +41,21 @@ class TwitchBot:
         self.farblist=["w","l","b","g","r"]
         self.itemWhitelist = ["a","b","c","d","e","f","g","h","i","j"]
 
-        
         """
         IRC Verbindungaufbauen        
         """
+        self.confList = read_config()
         self.SERVER = "irc.twitch.tv"
         self.PORT = 6667
-        self.PASS = self.confList.loc['auth'][0]
-        
         self.BOT = "TeamFightChaticts"
+        self.PASS = self.confList.loc['auth'][0]
         self.CHANNEL = self.confList.loc['channel'][0]
-        self.OWNER = self.confList.loc['channel'][0]
+        self.OWNER = self.confList.loc['channel'][0] # TODO: why not use CHANNEL for both?
 
         self.irc = socket.socket()
         self.irc.connect((self.SERVER, self.PORT))
         self.irc.send(f'PASS {self.PASS}\nNICK {self.BOT}\nJOIN #{self.CHANNEL}\n'.encode())
-        
+
         self.message = ""
         self.old_message = ''
         self.user = ""
@@ -87,26 +72,17 @@ class TwitchBot:
         self.thread = None
         self.stop_thread = threading.Event()
 
-    
-    @staticmethod
-    def readConfig() -> pd.DataFrame:
-        data = pd.read_csv('../config/config.txt', sep="=", index_col=0, header=None)
-        data.columns = ["value"]
-        return data  
-
-    def resetVars(self):
+    def reset_vars(self):
         #self.messagelist.clear()
         self.voll = False
         self.rein = False
         self.message = ""
 
     def decodeString(self, partStr):
-        
         try:
             x = str(partStr[0:1])
             y = int(partStr[1:2])
-            if y<8:
-                
+            if y < 8:
                 if x.startswith('w'):
                     return self.banklist[y-1]
                 if x.startswith('l'):
@@ -119,79 +95,40 @@ class TwitchBot:
                     return self.reihe4[y-1]
             if "w8" in partStr or "w9" in partStr:
                 return self.banklist[y-1]
-
         except:
             print("Konnte nicht ausgeführt werden")
             self.message=""
-    
-    def not_satisfy2(self, a, k,critical) -> bool:
-        flag=False
-        cx2,cy2 = k
-        for i in a:
-            cx1,cy1 = i
-            if(abs(cx1-cx2) < critical and abs(cy1-cy2) < critical):
-                flag=True
-                break
-        return flag
-    
-    def edit_list(self, a, length_of_a, critical) -> list:
-        l = []
-        l.append(a[0])
-        i=1
-        while(i < length_of_a):
-            if(self.not_satisfy2(l,a[i],critical)==True):
-                i+=1
-            else:
-                l.append(a[i])
-                i+=1
-        
-        return l
 
     def get_items(self) -> list:
-        screenshot = ImageGrab.grab()
-        coord = (500, 200, 1375, 725)
-        screenshot = screenshot.crop(coord)
-        image = np.array(screenshot)
-        grayscale = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-        width = int(grayscale.shape[1])
-        height = int(grayscale.shape[0])
-        dim = (width, height)
-        resized = cv2.resize(grayscale, dim, interpolation = cv2.INTER_AREA)
-        thresh = self.adthresholding(resized)
-        cv2.imwrite('../output/res.png', thresh)
-        
-        ### White Items
-        matches_w = self.findMatches(thresh, '../images/white.png')
-        ###Blue Items
-        matches_b = self.findMatches(thresh, '../images/blue.png')
-        
-        matches = []
-        matches.extend(matches_w)
-        matches.extend(matches_b)
-        
-        len_matches = len(matches)
-        if len_matches > 0:
-            loc = self.edit_list(matches, len_matches, 10)
-        else:
+        search_box = (500, 200, 1375, 725)
+        item_locs = capture_item_locations(search_box)
+        len_matches = len(item_locs)
+
+        if not len_matches:
             return None
 
+        loc = self.filter_closeby_points(item_locs, 10)
         offset = 30
         omatches = []
 
         for pt in loc:
-            omatches.append((pt[0] + coord[0] + offset, pt[1] + coord[1] + offset))
-        if len(omatches) > 5:
-            omatches = omatches[:4]
+            omatches.append((pt[0] + search_box[0] + offset, pt[1] + search_box[1] + offset))
 
-        return omatches
-    
-    
-    def clickItems(self, locations):
+        return omatches[:4] if len(omatches) > 4 else omatches
+
+    def filter_closeby_points(self, points: List[Tuple[int, int]], critical: int) -> List[Tuple[int, int]]:
+        distances = [((i, j), math.dist(points[i], points[j]))
+                     for i in range(points) for j in range(i)]
+        relevant_edges = [edge for (edge, dist) in distances if dist >= critical]
+        relevant_point_ids = set([e[0] for e in relevant_edges] + [e[1] for e in relevant_edges])
+        return [points[id] for id in relevant_point_ids]
+
+    def clickItems(self, locations: List[Tuple[int, int]]):
         for loc in locations:
             pyautogui.click(loc[0],loc[1], button='right')
             pyautogui.mouseUp(button='right')
             time.sleep(3)
-        pyautogui.click(470,650, button='right')
+        pyautogui.click(470, 650, button='right')
         pyautogui.mouseUp(button='right')
         self.clickIn()
     
@@ -204,7 +141,6 @@ class TwitchBot:
         self.messagelist.append(message)
         print(self.messagelist)
 
-        #zählt die anzahl der aktuellen message in der vorhandenen messagelist
         if collections.Counter(self.messagelist)[message] == self.counter:
             self.rein = True
             self.voll = True
@@ -242,18 +178,12 @@ class TwitchBot:
             message = ""
         return message
 
-    def console(self, line: str) -> bool:
-        return "PRIVMSG" in line
-
     def handle_shop_cmd(self, message: str):
-        if not self.rein and not self.chaos:
-            self.addMessage(message)
-        else:
-            self.clickIn()
-            z = int(message[4:]) - 1
-            pyautogui.click(self.shoplist[z], button='left')
-            pyautogui.mouseUp(button='left')
-            self.resetVars()
+        self.clickIn()
+        z = int(message[4:]) - 1
+        pyautogui.click(self.shoplist[z], button='left')
+        pyautogui.mouseUp(button='left')
+        self.reset_vars()
 
     def is_shop_cmd(self, message: str) -> bool:
         return message.startswith('shop') \
@@ -262,14 +192,11 @@ class TwitchBot:
             and 0 < int(message[-1]) < 6
 
     def handle_augment_cmd(self, message: str):
-        if not self.rein and not self.chaos:
-            self.addMessage(message)
-        else:
-            self.clickIn()
-            selected_augment = self.augmentlist[int(message[3])-1]
-            pyautogui.click(selected_augment)
-            pyautogui.mouseUp(button='left')
-            self.resetVars()
+        self.clickIn()
+        selected_augment = self.augmentlist[int(message[3])-1]
+        pyautogui.click(selected_augment)
+        pyautogui.mouseUp(button='left')
+        self.reset_vars()
 
     def is_augment_cmd(self, message: str) -> bool:
         return message.startswith('aug') \
@@ -278,116 +205,79 @@ class TwitchBot:
             and 0 < int(message[-1]) < 4
 
     def handle_lock_or_unlock_cmd(self, message: str):
-        if not self.rein and not self.chaos:
-            self.addMessage(message)
-        else:
-            self.clickIn()
-            pyautogui.click(1450, 900, button='left')
-            pyautogui.mouseUp(button='left')
-            self.resetVars()
+        self.clickIn()
+        pyautogui.click(1450, 900, button='left')
+        pyautogui.mouseUp(button='left')
+        self.reset_vars()
 
     def is_lock_or_unlock_cmd(self, message: str) -> bool:
         return message in ['lock', 'unlock']
 
     def handle_karussell_cmd(self, message: str):
-        if not self.rein and not self.chaos:
-            self.addMessage(message)
-        else:
-            self.clickIn()
-            pyautogui.click(950, 370, button='right')
-            pyautogui.mouseUp(button='right')
-            self.resetVars()
+        self.clickIn()
+        pyautogui.click(950, 370, button='right')
+        pyautogui.mouseUp(button='right')
+        self.reset_vars()
 
     def is_karussell_cmd(self, message: str) -> bool:
         return message == "now"
 
     def handle_collect_cmd(self, message: str):
-        if not self.rein and not self.chaos:
-            self.addMessage(message)
-        else:
-            self.clickIn()
-            items = self.get_items()
-            print('Items:', items)
-            
-            if items is not None:
-                t2 = threading.Thread(target = self.clickItems, args=(items,))
-                t2.start()
-            
-            self.resetVars()
+        self.clickIn()
+        items = self.get_items()
+        print('Items:', items)
+        if items:
+            t2 = threading.Thread(target = self.clickItems, args=(items,))
+            t2.start()
+        self.reset_vars()
 
     def is_collect_cmd(self, message: str) -> bool:
         return message == 'collect'
 
     def handle_levelup_cmd(self, message: str):
-        if not self.rein and not self.chaos:
-            self.addMessage(message)
-        else:
-            level = get_level_text()
-            gold = get_gold_text()
+        level = capture_level()
+        gold = capture_gold()
+        if not gold or not level:
+            return
+        act_xp, total_xp = level
 
-            print('Gold:', gold)
-            print('Level:', level)
+        # determine clicks required to levelup
+        # lvl guaruntees levelup for next rount, 
+        xp_diff_to_level = total_xp - act_xp
+        levelup_clicks = math.ceil(xp_diff_to_level / 4)
+        levelup_clicks -= 1 if message == 'lvl' and xp_diff_to_level % 4 <= 2 else 0
+        print(f'{act_xp} von {total_xp} XP, Kosten: {levelup_clicks * 4} Gold')
 
-            if gold.isdecimal():
-                gold = int(gold)
-            
-                level = level.split('/')
-                if len(level) == 2:
-                    a = level[0]
-                    if a.isdecimal():
-                        a = int(a)
-                        b = level[1]
-                        if b.isdecimal():
-                            if message == 'lvl':
-                                b = int(b) - 2
-                            else:
-                                b = int(b)
-                            c = b - a
-                            if c < 0:
-                                c = c + 30
-                            clicks = c // 4 + (c % 4 > 0)
-                    
-                            print(str(a) + ' von ' + str(b) + ' XP, Kosten: ' + str(clicks * 4) + ' Gold')
-                            pyautogui.moveTo(375, 960)
-                            i = 0
-                            if clicks * 4 <= gold:
-                                
-                                while i < clicks:
-                                    pyautogui.mouseDown(button="left")
-                                    pyautogui.mouseUp(button="left")
-                                    i += 1
-                                    print(i)
+        pyautogui.moveTo(375, 960)
+        while levelup_clicks > 0 and levelup_clicks * 4 <= gold:
+            pyautogui.mouseDown(button="left")
+            pyautogui.mouseUp(button="left")
+            levelup_clicks -= 1
 
-            self.clickIn()            
-            self.resetVars()
+        self.clickIn()            
+        self.reset_vars()
 
     def is_levelup_cmd(self, message: str) -> bool:
         return message in ['lvl', 'lvlup']
 
     def handle_roll_cmd(self, message: str):
-        if not self.rein and not self.chaos:
-            self.addMessage(message)
-        else:
-            pyautogui.click(375,1045)
-            pyautogui.mouseUp(button="left")
-            self.clickIn()
-            self.resetVars()
+        pyautogui.click(375,1045)
+        pyautogui.mouseUp(button="left")
+        self.clickIn()
+        self.reset_vars()
 
     def is_roll_cmd(self, message: str) -> bool:
         return message in ['roll', 'reroll']
 
     def handle_sellw_cmd(self, message: str):
-        if not self.rein and not self.chaos:
-            self.addMessage(message)
-        else:
-            self.clickIn()
-            z = self.decodeString(message[4:6])
-            pyautogui.moveTo(z)
-            pyautogui.mouseDown(button='left')
-            pyautogui.moveTo(self.shoplist[2])
-            pyautogui.mouseUp(button='left')
-            pyautogui.moveTo(z)
-            self.resetVars()
+        self.clickIn()
+        z = self.decodeString(message[4:6])
+        pyautogui.moveTo(z)
+        pyautogui.mouseDown(button='left')
+        pyautogui.moveTo(self.shoplist[2])
+        pyautogui.mouseUp(button='left')
+        pyautogui.moveTo(z)
+        self.reset_vars()
 
     def is_sellw_cmd(self, message: str) -> bool:
         return message.startswith('sellw') and len(message) < 7 \
@@ -396,17 +286,14 @@ class TwitchBot:
             and (message[4:6] == "w8" or message[4:6] == "w9" or 0 < int(message[-1]) < 8)
 
     def handle_place_unit_cmd(self, message: str):
-        if not self.rein and not self.chaos:
-            self.addMessage(message)
-        else:
-            self.clickIn()
-            origin = str(message[0:2])
-            aim = str(message[2:4]) 
-            pyautogui.moveTo(self.decodeString(origin))
-            pyautogui.mouseDown(button='left')
-            pyautogui.moveTo(self.decodeString(aim))
-            pyautogui.mouseUp(button='left')
-            self.resetVars()
+        self.clickIn()
+        origin = str(message[0:2])
+        aim = str(message[2:4]) 
+        pyautogui.moveTo(self.decodeString(origin))
+        pyautogui.mouseDown(button='left')
+        pyautogui.moveTo(self.decodeString(aim))
+        pyautogui.mouseUp(button='left')
+        self.reset_vars()
 
     def is_place_unit_cmd(self, message: str) -> bool:
         return len(message) < 5 and message[0:1] in self.farblist and message[1:2].isnumeric() \
@@ -415,55 +302,49 @@ class TwitchBot:
             and (message[0:2] == "w8" or message[0:2] == "w9" or 1 <= int(message[1:2]) <= 7)
 
     def handle_collect_items_cmd(self, message: str):
-        if not self.rein and not self.chaos:
-            self.addMessage(message)
-        else:
-            self.clickIn()
-            z = int(message[3:])
-            temp = ((self.Rowlist[z])[0][0] - 100, (self.Rowlist[z])[0][1])
-            pyautogui.click(temp,button='right')
-            pyautogui.mouseUp(button='right')
-            time.sleep(2)
-            temp = ((self.Rowlist[z])[6][0] + 100, (self.Rowlist[z])[6][1])
-            print(temp, type(temp))
-            pyautogui.click(temp,button='right')
-            pyautogui.mouseUp(button='right')
-            self.resetVars()
+        self.clickIn()
+        z = int(message[3:])
+        temp = ((self.Rowlist[z])[0][0] - 100, (self.Rowlist[z])[0][1])
+        pyautogui.click(temp,button='right')
+        pyautogui.mouseUp(button='right')
+        time.sleep(2)
+        temp = ((self.Rowlist[z])[6][0] + 100, (self.Rowlist[z])[6][1])
+        print(temp, type(temp))
+        pyautogui.click(temp,button='right')
+        pyautogui.mouseUp(button='right')
+        self.reset_vars()
 
     def is_collect_items_cmd(self, message: str) -> bool:
         return message.startswith('row') and len(message) < 5 \
             and message[-1].isdigit() and 0 < int(message[-1]) < 9
 
     def handle_attach_item_cmd(self, message: str):
-        if not self.rein and not self.chaos:
-            self.addMessage(message)
-        else:
-            self.clickIn()
-            slot = str(message[0:1])
-            if slot == "a":
-                pyautogui.moveTo(self.itemlist[0])
-            if slot == "b":
-                pyautogui.moveTo(self.itemlist[1])
-            if slot == "c":
-                pyautogui.moveTo(self.itemlist[2])
-            if slot == "d":
-                pyautogui.moveTo(self.itemlist[3])
-            if slot == "e":
-                pyautogui.moveTo(self.itemlist[4])
-            if slot == "f":
-                pyautogui.moveTo(self.itemlist[5])
-            if slot == "g":
-                pyautogui.moveTo(self.itemlist[6])
-            if slot == "h":
-                pyautogui.moveTo(self.itemlist[7])
-            if slot == "i":
-                pyautogui.moveTo(self.itemlist[8])
-            if slot == "j":
-                pyautogui.moveTo(self.itemlist[9])
-            pyautogui.mouseDown(button='left')
-            pyautogui.moveTo(self.decodeString(message[1:]))
-            pyautogui.mouseUp(button='left')
-            self.resetVars()
+        self.clickIn()
+        slot = str(message[0:1])
+        if slot == "a":
+            pyautogui.moveTo(self.itemlist[0])
+        if slot == "b":
+            pyautogui.moveTo(self.itemlist[1])
+        if slot == "c":
+            pyautogui.moveTo(self.itemlist[2])
+        if slot == "d":
+            pyautogui.moveTo(self.itemlist[3])
+        if slot == "e":
+            pyautogui.moveTo(self.itemlist[4])
+        if slot == "f":
+            pyautogui.moveTo(self.itemlist[5])
+        if slot == "g":
+            pyautogui.moveTo(self.itemlist[6])
+        if slot == "h":
+            pyautogui.moveTo(self.itemlist[7])
+        if slot == "i":
+            pyautogui.moveTo(self.itemlist[8])
+        if slot == "j":
+            pyautogui.moveTo(self.itemlist[9])
+        pyautogui.mouseDown(button='left')
+        pyautogui.moveTo(self.decodeString(message[1:]))
+        pyautogui.mouseUp(button='left')
+        self.reset_vars()
 
     def is_attach_item_cmd(self, message: str) -> bool:
         return message[0:1] in self.itemWhitelist and message[1:2] in self.farblist \
@@ -471,10 +352,12 @@ class TwitchBot:
             and message[1:3] == "w8" or message[1:3] == "w9" or 0 < int(message[-1]) < 8
 
     def gamecontrol(self, message=''):
-
         self.message = message = message.lower()
 
-        if self.is_shop_cmd(message):
+        if not self.rein and not self.chaos:
+            self.addMessage(message)
+
+        elif self.is_shop_cmd(message):
             self.handle_shop_cmd(message)
 
         elif self.is_augment_cmd(message):
@@ -519,7 +402,7 @@ class TwitchBot:
                 print('Befehl wird nicht wiederholt!')
                 self.messagelist = list(filter((message).__ne__, self.messagelist))
                 print(self.messagelist)
-                self.resetVars()
+                self.reset_vars()
                 
                     
     def start_bot(self):
