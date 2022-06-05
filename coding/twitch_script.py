@@ -158,7 +158,7 @@ class TwitchBot:
 
         if self.voll and not self.chaos:
             if message != self.old_message:
-                print(f"{self.ui_settings['foundCommand']} {message}")
+                # print(f"{self.ui_settings['foundCommand']} {message}")
                 self.rein = True
                 self.voll = False
                 self.messagelist.clear()
@@ -170,7 +170,7 @@ class TwitchBot:
                     self.tft_remote_control.gamecontrol(message)
                     self.reset_vars()
             else:
-                print(self.ui_settings['commandWontRepeat'])
+                # print(self.ui_settings['commandWontRepeat'])
                 self.messagelist = list(filter((message).__ne__, self.messagelist))
                 print(self.messagelist)
                 self.reset_vars()
