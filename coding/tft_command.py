@@ -9,7 +9,7 @@ class TFTCmdType(IntEnum):
     SHOP=1
     PICK_AUGMENT=2
     LOCK_OR_UNLOCK=3
-    PICK_ITEM_KARUSSELL=4
+    PICK_ITEM_CAROUSEL=4
     COLLECT_ALL_ITEMS_DROPPED=5
     LEVELUP=6
     ROLL_SHOP=7
@@ -27,7 +27,7 @@ class TFTCommand:
             TFTCmdType.SHOP: '^shop[1-5]$',
             TFTCmdType.PICK_AUGMENT: '^aug[1-3]$',
             TFTCmdType.LOCK_OR_UNLOCK: '^(lock|unlock)$',
-            TFTCmdType.PICK_ITEM_KARUSSELL: '^now$',
+            TFTCmdType.PICK_ITEM_CAROUSEL: '^now$',
             TFTCmdType.COLLECT_ALL_ITEMS_DROPPED: '^collect$',
             TFTCmdType.LEVELUP: '^(lvl|lvlup)$',
             TFTCmdType.ROLL_SHOP: '^(roll|reroll)$',

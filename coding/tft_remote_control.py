@@ -9,33 +9,23 @@ from .tft_command import TFTCommand, TFTCmdType
 from .tft_screen_capture import capture_level, capture_gold, capture_item_locations
 
 
-class MouseRemoteControl:
-    @staticmethod
-    def click_at(loc: Tuple[int, int]):
-        pyautogui.moveTo(loc[0], loc[1])
-        pyautogui.mouseDown(button="left")
-        pyautogui.mouseUp(button="left")
+def click_at(loc: Tuple[int, int]):
+    pyautogui.moveTo(loc[0], loc[1])
+    pyautogui.mouseDown(button="left")
+    pyautogui.mouseUp(button="left")
 
-    @staticmethod
-    def double_click_at(loc: Tuple[int, int]):
-        pyautogui.moveTo(loc[0], loc[1])
-        pyautogui.mouseDown(button="left")
-        pyautogui.mouseUp(button="left")
-        pyautogui.mouseDown(button="left")
-        pyautogui.mouseUp(button="left")
 
-    @staticmethod
-    def right_click_at(loc: Tuple[int, int]):
-        pyautogui.moveTo(loc[0], loc[1])
-        pyautogui.mouseDown(button="right")
-        pyautogui.mouseUp(button="right")
+def right_click_at(loc: Tuple[int, int]):
+    pyautogui.moveTo(loc[0], loc[1])
+    pyautogui.mouseDown(button="right")
+    pyautogui.mouseUp(button="right")
 
-    @staticmethod
-    def drag_item(from_loc: Tuple[int, int], to_loc: Tuple[int, int]):
-        pyautogui.moveTo(from_loc[0], from_loc[1])
-        pyautogui.mouseDown(button="left")
-        pyautogui.moveTo(to_loc[0], to_loc[1])
-        pyautogui.mouseUp(button="left")
+
+def mouse_drag(from_loc: Tuple[int, int], to_loc: Tuple[int, int]):
+    pyautogui.moveTo(from_loc[0], from_loc[1])
+    pyautogui.mouseDown(button="left")
+    pyautogui.moveTo(to_loc[0], to_loc[1])
+    pyautogui.mouseUp(button="left")
 
 
 class TFTRemoteControlPositions:
@@ -60,6 +50,13 @@ class TFTRemoteControlPositions:
         self.com_list = [(370, 980), (370, 1060)]
         self.avatar_default = (470, 650)
         self.avatar_velocity = 150
+        self.levelup_button = (375, 960)
+        self.roll_button = (375, 1045)
+        self.carousel_aim = (950, 370)
+        self.lock_button = (1450, 900)
+        self.item_drop_region = (500, 200, 1375, 725)
+        self.item_offset = 30
+        self.default_click_pos = (960, 250)
 
     def by_field(self, field_id: str) -> Tuple[int, int]:
         row = field_id[0]
@@ -87,7 +84,7 @@ class TFTRemoteControl:
             TFTCmdType.SHOP: self.handle_shop_cmd,
             TFTCmdType.PICK_AUGMENT: self.handle_augment_cmd,
             TFTCmdType.LOCK_OR_UNLOCK: self.handle_lock_or_unlock_cmd,
-            TFTCmdType.PICK_ITEM_KARUSSELL: self.handle_karussell_cmd,
+            TFTCmdType.PICK_ITEM_CAROUSEL: self.handle_carousel_cmd,
             TFTCmdType.COLLECT_ALL_ITEMS_DROPPED: self.handle_collect_cmd,
             TFTCmdType.LEVELUP: self.handle_levelup_cmd,
             TFTCmdType.ROLL_SHOP: self.handle_roll_cmd,
@@ -101,59 +98,51 @@ class TFTRemoteControl:
         if tft_cmd.type in self.cmd_handlers:
             self.cmd_handlers[tft_cmd.type](tft_cmd.cmd) # TODO: refactor to put whole command object
 
-    def click_in(self):
-        pyautogui.click(960, 250, button='left')
-        pyautogui.mouseUp(button='left')
-
     def handle_shop_cmd(self, tft_cmd: TFTCommand):
-        self.click_in()
+        click_at(self.positions.default_click_pos)
         unit = tft_cmd.selected_shop_unit
         shop_pos = self.positions.shop_list[unit]
-        pyautogui.click(shop_pos, button='left')
-        # pyautogui.mouseUp(button='left') # should be obsolete
+        click_at(shop_pos)
 
     def handle_augment_cmd(self, tft_cmd: TFTCommand):
-        self.click_in()
+        click_at(self.positions.default_click_pos)
         augment_pos = self.positions.augment_list[tft_cmd.selected_augment]
-        pyautogui.click(augment_pos)
-        # pyautogui.mouseUp(button='left') # should be obsolete
+        click_at(augment_pos)
 
     def handle_lock_or_unlock_cmd(self, _: TFTCommand):
-        self.click_in()
-        pyautogui.click(1450, 900, button='left')
-        # pyautogui.mouseUp(button='left') # should be obsolete
+        click_at(self.positions.default_click_pos)
+        click_at(self.positions.lock_button)
 
-    def handle_karussell_cmd(self, _: TFTCommand):
-        self.click_in()
-        pyautogui.click(950, 370, button='right')
-        # pyautogui.mouseUp(button='right') # should be obsolete
+    def handle_carousel_cmd(self, _: TFTCommand):
+        click_at(self.positions.default_click_pos)
+        right_click_at(self.positions.carousel_aim)
 
     def handle_collect_cmd(self, _: TFTCommand):
-        self.click_in()
+        click_at(self.positions.default_click_pos)
         items = self.compute_item_drop_positions()
         if items:
             self.collect_dropped_items_at(items)
 
     def compute_item_drop_positions(self) -> list:
-        OFFSET = 30
-        SEARCH_BOX = (500, 200, 1375, 725)
-        item_locs = capture_item_locations(SEARCH_BOX)
+        offset = self.positions.item_offset
+        box = self.positions.item_drop_region
+        item_locs = capture_item_locations(box)
         if not item_locs:
             return None
-        return [(p[0] + SEARCH_BOX[0] + OFFSET, p[1] + SEARCH_BOX[1] + OFFSET) for p in item_locs]
+        return [(p[0] + box[0] + offset, p[1] + box[1] + offset) for p in item_locs]
 
     def collect_dropped_items_at(self, locations: List[Tuple[int, int]]):
         # TODO: use Dijkstra algorithm to compute the shortest path instead of randomly walking between items
         locations.insert(0, self.positions.avatar_default)
         locations.append(self.positions.avatar_default)
+
         for pos_from, pos_to in zip(locations[:-1], locations[1:]):
             distance = math.dist(pos_from, pos_to)
-            pyautogui.click(pos_to[0], pos_to[1], button='right')
-            pyautogui.mouseUp(button='right')
+            right_click_at(pos_to)
             if pos_to != self.positions.avatar_default:
                 time.sleep(distance / self.positions.avatar_velocity)
 
-        self.click_in()
+        click_at(self.positions.default_click_pos)
 
     def handle_levelup_cmd(self, tft_cmd: TFTCommand):
         level = capture_level()
@@ -162,61 +151,44 @@ class TFTRemoteControl:
             return
         act_xp, total_xp = level
 
-        # determine clicks required to levelup
-        # 'lvl' guaruntees levelup for next round
         xp_diff_to_level = total_xp - act_xp
         levelup_clicks = math.ceil(xp_diff_to_level / 4)
         levelup_clicks -= 1 if tft_cmd.cmd == 'lvl' and xp_diff_to_level % 4 <= 2 else 0
 
-        pyautogui.moveTo(375, 960)
         while levelup_clicks > 0 and levelup_clicks * 4 <= gold:
-            pyautogui.mouseDown(button="left")
-            pyautogui.mouseUp(button="left")
+            click_at(self.positions.levelup_button)
             levelup_clicks -= 1
 
-        self.click_in()
+        click_at(self.positions.default_click_pos)
 
     def handle_roll_cmd(self, _: TFTCommand):
-        pyautogui.click(375, 1045)
-        pyautogui.mouseUp(button="left")
-        self.click_in()
+        click_at(self.positions.roll_button)
+        click_at(self.positions.default_click_pos)
 
     def handle_sell_bench_unit_cmd(self, tft_cmd: TFTCommand):
-        self.click_in()
+        click_at(self.positions.default_click_pos)
         unit_pos = self.positions.by_field(tft_cmd.unit_to_sell)
-        pyautogui.moveTo(unit_pos)
-        pyautogui.mouseDown(button='left')
-        pyautogui.moveTo(self.positions.shop_list[2])
-        pyautogui.mouseUp(button='left')
-        pyautogui.moveTo(unit_pos)
+        mouse_drag(unit_pos, self.positions.shop_list[2])
 
     def handle_place_unit_cmd(self, tft_cmd: TFTCommand):
-        self.click_in()
-        origin = str(tft_cmd.unit_to_place)
-        aim = str(tft_cmd.unit_place_aim)
-        pyautogui.moveTo(self.positions.by_field(origin))
-        pyautogui.mouseDown(button='left')
-        pyautogui.moveTo(self.positions.by_field(aim))
-        pyautogui.mouseUp(button='left')
+        click_at(self.positions.default_click_pos)
+        origin_pos = self.positions.by_field(tft_cmd.unit_to_place)
+        aim_pos = self.positions.by_field(tft_cmd.unit_place_aim)
+        mouse_drag(origin_pos, aim_pos)
 
     def handle_collect_row_cmd(self, tft_cmd: TFTCommand):
-        self.click_in()
+        click_at(self.positions.default_click_pos)
         row = tft_cmd.row_to_collect
         start_pos = ((self.positions.board_locations[row])[0][0] - 100,
                      (self.positions.board_locations[row])[0][1])
-        pyautogui.click(start_pos, button='right')
-        pyautogui.mouseUp(button='right')
+        right_click_at(start_pos)
         time.sleep(2)
         end_pos = ((self.positions.board_locations[row])[6][0] + 100,
                    (self.positions.board_locations[row])[6][1])
-        pyautogui.click(end_pos, button='right')
-        pyautogui.mouseUp(button='right')
+        right_click_at(end_pos)
 
     def handle_attach_item_cmd(self, tft_cmd: TFTCommand):
-        self.click_in()
+        click_at(self.positions.default_click_pos)
         item_pos = self.positions.item_list[tft_cmd.item_to_atttach]
         unit_pos = self.positions.by_field(tft_cmd.unit_to_attach_to)
-        pyautogui.moveTo(item_pos)
-        pyautogui.mouseDown(button='left')
-        pyautogui.moveTo(unit_pos)
-        pyautogui.mouseUp(button='left')
+        mouse_drag(item_pos, unit_pos)
