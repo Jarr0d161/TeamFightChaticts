@@ -18,7 +18,7 @@ Das GIT-Repository beinhaltet einen Twitch-Chat-Bot, welcher Chatnachrichten in 
 
 * coding/TFTwitch.py ausführen 
   * Eingabeaufforderung (Terminal, cmd) im root-git-Ordner öffnen
-  * Eingabe: **python3 coding/TFTwitch.py**
+  * Eingabe: **python3 coding/main.py**
 * Pool-Größe (Anzahl gleicher Nachrichten) eintragen und Start drücken
 * Stop trennt die Verbindung zum TwitchChat
 * Hinweis: Viele Werte sind aktuell noch "hardcoded" auf 1900x1080p, beim Starten von TFT beachten!
@@ -78,7 +78,3 @@ channel=ChannelName
 * Walk horizontal: row(1-8) --- e.g. *row4*
 * Distribute items: [Itemfield][Field] --- e.g. *bw3*
 * Lock or unlock the shop: *lock* / *unlock*
-
-
-
-
