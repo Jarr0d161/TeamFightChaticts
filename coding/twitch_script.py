@@ -1,40 +1,24 @@
-from typing import List
+from typing import List, Tuple
 import socket
 import threading
 import pyautogui
 import collections
 
-from .settings import read_config
+from .settings import *
 from .tft_remote_control import TFTRemoteControl
 
+
 class TwitchBot:
-
     def __init__(self, chaos=False, pool=10):
-        """
-        Config laden
-        """
         pyautogui.FAILSAFE = False
-
         self.chaos = chaos
         self.voll = False
 
+        self.ui_settings = ui_settings_of_selected_language()
         self.tft_remote_control = TFTRemoteControl()
+        self.twitch_channel, self.irc = self.connect_to_twitch()
 
-        """
-        IRC Verbindungaufbauen
-        """
-        self.confList = read_config()
-        self.SERVER = "irc.twitch.tv"
-        self.PORT = 6667
-        self.BOT = "TeamFightChaticts"
-        self.PASS = self.confList.loc['auth'][0]
-        self.CHANNEL = self.confList.loc['channel'][0]
-        self.OWNER = self.confList.loc['channel'][0] # TODO: why not use CHANNEL for both?
-
-        self.irc = socket.socket()
-        self.irc.connect((self.SERVER, self.PORT))
-        self.irc.send(f'PASS {self.PASS}\nNICK {self.BOT}\nJOIN #{self.CHANNEL}\n'.encode())
-
+        # TODO: put the chatbot state into a dataclass
         self.message = ""
         self.old_message = ''
         self.user = ""
@@ -50,6 +34,20 @@ class TwitchBot:
         self.lockActivated = False
         self.thread = None
         self.stop_thread = threading.Event()
+
+    def connect_to_twitch(self) -> Tuple[str, socket.socket]:
+        # TODO: put all twitch settings in one dataclass
+        SERVER = "irc.twitch.tv"
+        PORT = 6667
+        BOT = "TeamFightChaticts"
+        PASS = twitch_password()
+        # OWNER = twitch_channel_owner()
+        channel = twitch_channel_to_be_observed()
+
+        irc = socket.socket()
+        irc.connect((SERVER, PORT))
+        irc.send(f'PASS {PASS}\nNICK {BOT}\nJOIN #{channel}\n'.encode())
+        return irc, channel
 
     def reset_vars(self):
         #self.messagelist.clear()
@@ -80,7 +78,7 @@ class TwitchBot:
     def loadingComplete(self, line: str) -> bool:
         is_load_complete = "End of /NAMES list" not in line
         if not is_load_complete:
-            print("TwitchBot ist am Start in " + self.CHANNEL + "' Channel!")
+            print(f"{self.ui_settings['loadingComplete']} {self.twitch_channel}' Channel!")
         return is_load_complete
 
     def parse_submitting_user(self, line: str) -> str:
@@ -103,13 +101,14 @@ class TwitchBot:
         self.thread = threading.Thread(target=self.twitch)
         self.thread.start()
 
-
     def stop(self):
         self.stop_thread.set()
         self.thread.join()
         self.thread = None
 
     def twitch(self):
+        # TODO: invert dependency between overlay ui and chat bot, decouple using callback funcions
+
         self.join_chat()
         self.irc.send("CAP REQ :twitch.tv/tags\r\n".encode())
 
@@ -156,7 +155,7 @@ class TwitchBot:
 
             if self.voll and not self.chaos:
                 if message != self.old_message:
-                    print("Erkannter Befehl:", message)
+                    print(f"{self.ui_settings['foundCommand']} {message}")
                     self.rein = True
                     self.voll = False
                     self.messagelist.clear()
@@ -168,7 +167,7 @@ class TwitchBot:
                         self.tft_remote_control.gamecontrol(message)
                         self.reset_vars()
                 else:
-                    print('Befehl wird nicht wiederholt!')
+                    print(self.ui_settings['commandWontRepeat'])
                     self.messagelist = list(filter((message).__ne__, self.messagelist))
                     print(self.messagelist)
                     self.reset_vars()
@@ -177,7 +176,7 @@ class TwitchBot:
             pass
 
 
-if __name__ =='__main__':
+if __name__ == '__main__':
     bot = TwitchBot(chaos=False, pool=1)
     t1 = threading.Thread(target = bot.twitch())
     t1.start()
