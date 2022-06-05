@@ -9,7 +9,7 @@ from .tft_remote_control import TFTRemoteControl
 
 
 @dataclass
-class TFTTwitchBotState:
+class TwitchTFTChatbotState:
     last_cmd: TFTCommand=TFTCommand('')
     cmd_counts: Dict[TFTCommand, int]=field(default_factory=lambda: dict())
 
@@ -26,10 +26,10 @@ class TFTTwitchBotState:
 
 
 @dataclass
-class TFTTwitchBot:
+class TwitchTFTChatbot:
     connection: TwitchConnection
     tft_remote_control: TFTRemoteControl
-    state: TFTTwitchBotState=TFTTwitchBotState()
+    state: TwitchTFTChatbotState=TwitchTFTChatbotState()
     thread = threading.Thread=field(init=False, default=None)
     shutdown_requested: bool=False
 

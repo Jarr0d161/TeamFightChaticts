@@ -33,7 +33,6 @@ class TwitchConnection:
         line = ''
         while SUCCESS_TEXT not in line:
             buffer = irc.recv(self.buffer_size).decode(self.encoding)
-            print(buffer)
             line = buffer.split("\n")[-1]
 
         self.irc = irc
@@ -71,7 +70,6 @@ class TwitchConnection:
     def _send_twitch_pong(self):
         msg = "PONG :tmi.twitch.tv\r\n".encode(self.encoding)
         self.irc.send(msg)
-        print(msg)
 
     def _parse_message_from_line(self, line: str) -> str:
         try:
@@ -79,7 +77,6 @@ class TwitchConnection:
             line_parts = line.split(":", colons)
             user = line_parts[colons-1].split("!", 1)[0]
             message = line_parts[2] if len(line_parts) >= 3 else ""
-            print(f'{user} : {message}')
             return message
         except:
             return ""

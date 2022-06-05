@@ -129,7 +129,7 @@ class TFTRemoteControl:
     def handle_collect_cmd(self, _: TFTCommand):
         self.click_in()
         items = self.compute_item_drop_positions()
-        print('Items:', items)
+        # print('Items:', items)
         if items:
             self.collect_dropped_items_at(items)
 
@@ -172,7 +172,7 @@ class TFTRemoteControl:
         xp_diff_to_level = total_xp - act_xp
         levelup_clicks = math.ceil(xp_diff_to_level / 4)
         levelup_clicks -= 1 if tft_cmd.cmd == 'lvl' and xp_diff_to_level % 4 <= 2 else 0
-        print(f'{act_xp} von {total_xp} XP, Kosten: {levelup_clicks * 4} Gold')
+        # print(f'{act_xp} von {total_xp} XP, Kosten: {levelup_clicks * 4} Gold')
 
         pyautogui.moveTo(375, 960)
         while levelup_clicks > 0 and levelup_clicks * 4 <= gold:

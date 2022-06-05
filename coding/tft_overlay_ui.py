@@ -100,13 +100,11 @@ class TFTRemoteControlOverlayUI(tk.Frame):
 
     def start_button_pressed(self):
         self.fn_start_chatbot(self.pool)
-        print(self.ui_settings["start"])
         self.is_running = True
         self.start_stop_button.config(text=self.ui_settings['stop_button_text'])
 
     def stop_button_pressed(self):
         self.fn_stop_chatbot()
-        print(self.ui_settings["stop"])
         self.is_running  = False
         self.start_stop_button.config(text=self.ui_settings['start_button_text'])
 
