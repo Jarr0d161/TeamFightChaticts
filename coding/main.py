@@ -1,4 +1,5 @@
-from .settings import twitch_settings
+from .settings import tft_overlay_positions, twitch_settings, ui_settings_of_selected_language
+from .tft_screen_capture import TFTTesseractScreenCapture
 from .tft_remote_control import TFTRemoteControl
 from .twitch_connection import TwitchConnection
 from .tft_overlay_ui import TFTRemoteControlOverlayUI
@@ -6,10 +7,12 @@ from .twitch_chatbot import TwitchTFTChatbot
 
 
 def main():
-    tft_remote = TFTRemoteControl()
+    tft_remote = TFTRemoteControl(tft_overlay_positions(), TFTTesseractScreenCapture())
     twitch_connection = TwitchConnection(twitch_settings())
     twitch_chatbot = TwitchTFTChatbot(twitch_connection, tft_remote)
-    overlay_ui = TFTRemoteControlOverlayUI(twitch_chatbot.start_bot, twitch_chatbot.stop_bot)
+    overlay_ui = TFTRemoteControlOverlayUI(
+        twitch_chatbot.start_bot, twitch_chatbot.stop_bot,
+        ui_settings_of_selected_language())
     overlay_ui.display_as_daemon()
 
 

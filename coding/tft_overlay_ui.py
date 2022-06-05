@@ -1,21 +1,21 @@
-from typing import Callable
+from typing import Callable, Dict, Any
 
 import tkinter as tk
 import tkinter.font as tkFont
 
-from .settings import ui_settings_of_selected_language
-
 
 class TFTRemoteControlOverlayUI(tk.Frame):
     # TODO: get rid of inheritance if possible!!!
-    def __init__(self, start_chatbot: Callable[[int], None], stop_chatbot: Callable[[], None],
-                 parent: tk.Tk=tk.Tk(), width=518, height=180, *args, **kwargs):
+    def __init__(self, start_chatbot: Callable[[int], None],
+                 stop_chatbot: Callable[[], None],
+                 ui_settings: Dict[str, Any], parent: tk.Tk=tk.Tk(),
+                 width=518, height=180, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
 
         self.fn_start_chatbot = start_chatbot
         self.fn_stop_chatbot = stop_chatbot
 
-        self.ui_settings = ui_settings_of_selected_language()
+        self.ui_settings = ui_settings
         self.parent = self.init_parent(parent, self.ui_settings['ui_title'], width, height)
         self.poolsize_input = self.load_poolsize_input()
         self.load_launch_usage_label()

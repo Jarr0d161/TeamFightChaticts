@@ -1,12 +1,22 @@
 import time
 import math
 from dataclasses import dataclass, field
-from typing import Tuple, List, Dict, Callable, Any
+from typing import Tuple, List, Dict, Callable, Any, Protocol
 
 import pyautogui
 
 from .tft_command import TFTCommand, TFTCmdType
-from .tft_screen_capture import capture_level, capture_gold, capture_item_locations
+
+
+class TFTScreenCapture(Protocol):
+    def capture_level(self) -> Tuple[int, int]:
+        ...
+
+    def capture_gold(self) -> int:
+        ...
+
+    def capture_item_locations(self, crop: Tuple[int, int, int, int]) -> List[Tuple[int, int]]:
+        ...
 
 
 class MouseControl:
@@ -75,7 +85,8 @@ class TFTRemoteControlPositions:
 
 @dataclass
 class TFTRemoteControl:
-    positions: TFTRemoteControlPositions=TFTRemoteControlPositions()
+    positions: TFTRemoteControlPositions
+    screen_capture: TFTScreenCapture
     mouse: MouseControl=MouseControl()
     cmd_handlers: Dict[TFTCmdType, Callable[[TFTCommand]], None] = field(init=False)
 
@@ -126,7 +137,7 @@ class TFTRemoteControl:
     def compute_item_drop_positions(self) -> list:
         offset = self.positions.item_offset
         box = self.positions.item_drop_region
-        item_locs = capture_item_locations(box)
+        item_locs = self.screen_capture.capture_item_locations(box)
         if not item_locs:
             return None
         return [(p[0] + box[0] + offset, p[1] + box[1] + offset) for p in item_locs]
@@ -145,8 +156,8 @@ class TFTRemoteControl:
         self.mouse.click_at(self.positions.default_click_pos)
 
     def handle_levelup_cmd(self, tft_cmd: TFTCommand):
-        level = capture_level()
-        gold = capture_gold()
+        level = self.screen_capture.capture_level()
+        gold = self.screen_capture.capture_gold()
         if not gold or not level:
             return
         act_xp, total_xp = level
