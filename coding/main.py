@@ -1,6 +1,7 @@
 from .settings import \
     tesseract_rootdir, tft_overlay_positions, \
     twitch_settings, ui_settings_of_selected_language
+from .mouse_control import MouseControl
 from .tft_screen_capture import TFTTesseractScreenCapture
 from .tft_remote_control import TFTRemoteControl
 from .twitch_connection import TwitchConnection
@@ -10,7 +11,7 @@ from .twitch_chatbot import TwitchTFTChatbot
 
 def main():
     tft_screen_capture = TFTTesseractScreenCapture(tesseract_rootdir())
-    tft_remote = TFTRemoteControl(tft_overlay_positions(), tft_screen_capture)
+    tft_remote = TFTRemoteControl(tft_overlay_positions(), tft_screen_capture, MouseControl())
     twitch_connection = TwitchConnection(twitch_settings())
     twitch_chatbot = TwitchTFTChatbot(twitch_connection, tft_remote)
     overlay_ui = TFTRemoteControlOverlayUI(

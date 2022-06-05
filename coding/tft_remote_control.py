@@ -3,8 +3,6 @@ import math
 from dataclasses import dataclass, field
 from typing import Tuple, List, Dict, Callable, Any, Protocol
 
-import pyautogui
-
 from .tft_command import TFTCommand, TFTCmdType
 
 
@@ -19,22 +17,15 @@ class TFTScreenCapture(Protocol):
         ...
 
 
-class MouseControl:
+class MouseControl(Protocol):
     def click_at(self, loc: Tuple[int, int]):
-        pyautogui.moveTo(loc[0], loc[1])
-        pyautogui.mouseDown(button="left")
-        pyautogui.mouseUp(button="left")
+        ...
 
     def right_click_at(self, loc: Tuple[int, int]):
-        pyautogui.moveTo(loc[0], loc[1])
-        pyautogui.mouseDown(button="right")
-        pyautogui.mouseUp(button="right")
+        ...
 
     def drag(self, from_loc: Tuple[int, int], to_loc: Tuple[int, int]):
-        pyautogui.moveTo(from_loc[0], from_loc[1])
-        pyautogui.mouseDown(button="left")
-        pyautogui.moveTo(to_loc[0], to_loc[1])
-        pyautogui.mouseUp(button="left")
+        ...
 
 
 class TFTRemoteControlPositions:
@@ -87,7 +78,7 @@ class TFTRemoteControlPositions:
 class TFTRemoteControl:
     positions: TFTRemoteControlPositions
     screen_capture: TFTScreenCapture
-    mouse: MouseControl=MouseControl()
+    mouse: MouseControl
     cmd_handlers: Dict[TFTCmdType, Callable[[TFTCommand]], None] = field(init=False)
 
     def __post_init__(self):
