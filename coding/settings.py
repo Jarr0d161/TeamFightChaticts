@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Any
+from typing import Dict
 from dataclasses import dataclass
 import pandas as pd
 
@@ -50,7 +50,7 @@ def selected_language() -> str:
     return confList.loc["language"]["value"]
 
 
-def ui_settings_of_selected_language() -> Dict[Any, str]:
+def ui_settings_of_selected_language() -> Dict[str, str]:
     language = selected_language()
     if language == "de":
         return gui_output_dict_deutsch

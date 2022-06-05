@@ -8,25 +8,15 @@ from .settings import ui_settings_of_selected_language
 
 class TFTRemoteControlOverlayUI(tk.Frame):
     # TODO: get rid of inheritance if possible!!!
-    def __init__(self, fn_start_chatbot: Callable[[int], None], fn_stop_chatbot: Callable[[], None],
+    def __init__(self, start_chatbot: Callable[[int], None], stop_chatbot: Callable[[], None],
                  parent: tk.Tk=tk.Tk(), width=518, height=180, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
 
-        self.fn_start_chatbot = fn_start_chatbot
-        self.fn_stop_chatbot = fn_stop_chatbot
+        self.fn_start_chatbot = start_chatbot
+        self.fn_stop_chatbot = stop_chatbot
 
         self.ui_settings = ui_settings_of_selected_language()
-        self.parent = parent
-        self.parent.title(self.ui_settings['ui_title'])
-
-        # define parent window bounds and resize mode
-        screen_width = self.parent.winfo_screenwidth()
-        screen_height = self.parent.winfo_screenheight()
-        alignstr = '%dx%d+%d+%d' % (width, height, (screen_width - width) // 2, (screen_height - height) // 2)
-        self.parent.geometry(alignstr)
-        self.parent.resizable(width=False, height=False)
-
-        # load ui components
+        self.parent = self.init_parent(parent, self.ui_settings['ui_title'], width, height)
         self.poolsize_input = self.load_poolsize_input()
         self.load_launch_usage_label()
         self.load_auth_usage_label()
@@ -35,6 +25,15 @@ class TFTRemoteControlOverlayUI(tk.Frame):
         self.load_exit_button()
 
         self.is_running = False
+
+    def init_parent(self, parent: tk.Tk, title: str, width, height) -> tk.Tk:
+        parent.title(title)
+        screen_width = parent.winfo_screenwidth()
+        screen_height = parent.winfo_screenheight()
+        align_width, align_height = (screen_width - width) // 2, (screen_height - height) // 2
+        alignstr = '%dx%d+%d+%d' % (width, height, align_width, align_height)
+        parent.geometry(alignstr)
+        parent.resizable(width=False, height=False)
 
     def load_poolsize_input(self) -> tk.Entry:
         poolsize_input = tk.Entry(self.parent)
@@ -84,7 +83,7 @@ class TFTRemoteControlOverlayUI(tk.Frame):
         exit_button = tk.Button(
             self.parent, text="Exit", bg="#efefef",justify="center",
             font=('arial', 12, 'normal'), command=self.exit_button)
-        exit_button.place(x=420,y=110,width=70,height=30)
+        exit_button.place(x=420, y=110, width=70, height=30)
 
     def display_as_daemon(self):
         self.pack(side="top", fill="both", expand=True)
