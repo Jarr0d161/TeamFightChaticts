@@ -64,8 +64,8 @@ Following table shows all commands supported:
 | roll / reroll     | Reroll shop                    |                   |
 | lvl / lvlup       | Level up                       |                   |
 | collect           | Collect items with avatar      |                   |
-| row(1-8)          | Walk row with ava              | row4              |
-| aug(1-3)          | Select augme                   | aug2              |
+| row(1-8)          | Walk row with avatar           | row4              |
+| aug(1-3)          | Select augment                 | aug2              |
 | (itemslot)(field) | Run (upwards) in item carousel | bw3               |
 | lock / unlock     | Lock / unlock store            |                   |
 
