@@ -1,7 +1,6 @@
 from typing import List, Tuple
 import socket
 import threading
-import pyautogui
 import collections
 
 from .settings import *
@@ -9,8 +8,7 @@ from .tft_remote_control import TFTRemoteControl
 
 
 class TwitchBot:
-    def __init__(self, chaos=False, pool=10):
-        pyautogui.FAILSAFE = False
+    def __init__(self, chaos=False):
         self.chaos = chaos
         self.voll = False
 
@@ -73,9 +71,9 @@ class TwitchBot:
             print(readbuffer_join)
             for line in readbuffer_join.split("\n")[0:-1]:
                 print(line)
-                Loading = self.loadingComplete(line)
+                Loading = self.loading_omplete(line)
 
-    def loadingComplete(self, line: str) -> bool:
+    def loading_omplete(self, line: str) -> bool:
         is_load_complete = "End of /NAMES list" not in line
         if not is_load_complete:
             print(f"{self.ui_settings['loadingComplete']} {self.twitch_channel}' Channel!")
@@ -96,7 +94,7 @@ class TwitchBot:
             message = ""
         return message
 
-    def start_bot(self):
+    def start_bot(self, pool_size: int):
         self.stop_thread.clear()
         self.thread = threading.Thread(target=self.twitch)
         self.thread.start()

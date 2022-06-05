@@ -7,9 +7,12 @@ import pandas as pd
 # TODO: translations for 'foundCommand' are missing!!!
 # TODO: translations for 'commandWontRepeat' are missing!!!
 gui_output_dict_english = {
-    "256": "With the start button the twitchbot starts its work.",
-    "253": "Enter auth for Twich in config in the style auth=oauth:... and channel=channelname",
-    "459": "Message pool (count):",
+    "ui_title": "TeamFightChaticts by Flanivia & Jarr0d",
+    "start_button_text": "Start",
+    "stop_button_text": "Stop",
+    "launch_usage": "With the start button the twitchbot starts its work.",
+    "auth_usage": "Enter auth for Twitch in config in the style auth=oauth:... and channel=channelname",
+    "msg_pool_count": "Message pool (count):",
     "start": "Bot Started",
     "stop": "Bot Stopped",
     "close": "Bot Closing"
@@ -17,9 +20,12 @@ gui_output_dict_english = {
 
 
 gui_output_dict_deutsch = {
-    "256": "Mit dem Start Button beginnt der Twitchbot seine Arbeit.",
-    "253": "Auth für Twich in config eintragen im Stil auth=oauth:... und channel=channelname",
-    "459": "Nachrichten Pool (Anzahl):",
+    "ui_title": "TeamFightChaticts by Flanivia & Jarr0d",
+    "start_button_text": "Start",
+    "stop_button_text": "Stop",
+    "launch_usage": "Mit dem Start Button beginnt der Twitchbot seine Arbeit.",
+    "auth_usage": "Auth für Twitch in config eintragen im Stil auth=oauth:... und channel=channelname",
+    "msg_pool_count": "Nachrichten Pool (Anzahl):",
     "start": "Bot gestartet",
     "stop": "Bot gestoppt",
     "close": "Bot wird geschlossen"
