@@ -1,7 +1,7 @@
 import time
 import math
 from dataclasses import dataclass, field
-from typing import Tuple, List, Dict, Callable
+from typing import Tuple, List, Dict, Callable, Any
 
 import pyautogui
 
@@ -29,33 +29,33 @@ class MouseControl:
 
 class TFTRemoteControlPositions:
     # TODO: compute the positions as properties depending on the screen resolution
-    def __init__(self):
-        self.row_1=[(580, 670), (710, 670), (840, 670), (970, 670), (1100, 670), (1230, 670), (1360, 670)]
-        self.row_2=[(530, 590), (660, 590), (790, 590), (900, 590), (1025, 590), (1150, 590), (1275, 590)]
-        self.row_3=[(610, 515), (730, 515), (850, 515), (965, 515), (1080, 515), (1200, 515), (1315, 515)]
-        self.row_4=[(560, 430), (680, 430), (790, 430), (905, 430), (1025, 430), (1140, 430), (1250, 430)]
-        self.row_5=[(580, 370), (710, 370), (840, 370), (970, 370), (1100, 370), (1230, 370), (1340, 370)]
-        self.row_6=[(560, 315), (660, 315), (790, 315), (900, 315), (1025, 315), (1150, 315), (1310, 315)]
-        self.row_7=[(550, 240), (730, 240), (850, 240), (965, 240), (1080, 240), (1200, 240), (1315, 240)]
-        self.row_8=[(590, 175), (680, 175), (790, 175), (905, 175), (1025, 175), (1140, 175), (1250, 175)]
-        self.bench=[(420, 780), (540, 780), (660, 780), (780, 780), (900, 780), (1020, 780), (1140, 780), (1260, 780), (1380, 780)]
+    def __init__(self, settings: Dict[str, Any]):
+        self.row_1 = settings['row_1']
+        self.row_2 = settings['row_2']
+        self.row_3 = settings['row_3']
+        self.row_4 = settings['row_4']
+        self.row_5 = settings['row_5']
+        self.row_6 = settings['row_6']
+        self.row_7 = settings['row_7']
+        self.row_8 = settings['row_8']
+        self.bench = settings['row_8']
+        self.augment_list = settings['augment_list']
+        self.item_list = settings['item_list']
+        self.shop_list = settings['shop_list']
+        self.com_list = settings['com_list']
+        self.avatar_default = settings['avatar_default']
+        self.avatar_velocity = settings['avatar_velocity']
+        self.levelup_button = settings['levelup_button']
+        self.roll_button = settings['roll_button']
+        self.carousel_aim = settings['carousel_aim']
+        self.lock_button = settings['lock_button']
+        self.item_drop_region = settings['item_drop_region']
+        self.item_offset = settings['item_offset']
+        self.default_click_pos = settings['default_click_pos']
         self.board_locations= [
             self.bench, self.row_1, self.row_2, self.row_3, self.row_4,
             self.row_5, self.row_6, self.row_7, self.row_8
         ]
-        self.augment_list= [(590, 500), (960, 500), (1320, 500)]
-        self.item_list = [(290, 755), (335, 725), (310, 705), (350, 660), (410, 665), (325, 630), (385, 630), (445, 630), (340, 590), (395, 590)]
-        self.shop_list=[(570, 1000), (770, 1000), (970, 1000), (1170, 1000), (1370, 1000)]
-        self.com_list = [(370, 980), (370, 1060)]
-        self.avatar_default = (470, 650)
-        self.avatar_velocity = 150
-        self.levelup_button = (375, 960)
-        self.roll_button = (375, 1045)
-        self.carousel_aim = (950, 370)
-        self.lock_button = (1450, 900)
-        self.item_drop_region = (500, 200, 1375, 725)
-        self.item_offset = 30
-        self.default_click_pos = (960, 250)
 
     def by_field(self, field_id: str) -> Tuple[int, int]:
         row = field_id[0]

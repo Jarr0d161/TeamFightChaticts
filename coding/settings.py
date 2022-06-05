@@ -1,5 +1,6 @@
 import os
-from typing import Dict
+import json
+from typing import Dict, Any
 from dataclasses import dataclass
 import pandas as pd
 
@@ -65,3 +66,9 @@ def twitch_settings() -> TwitchSettings:
     password = confList.loc['auth'][0]
     channel = confList.loc['channel'][0]
     return TwitchSettings(password, channel)
+
+
+def tft_overlay_positions(config_filepath: str=
+        '../config/tft_overlay_positions.json') -> Dict[str, Any]:
+    with open(config_filepath, 'r') as file:
+        return json.load(file)
