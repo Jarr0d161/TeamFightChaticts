@@ -5,7 +5,7 @@ from teamfightchaticts.mouse_control import MouseControl
 from teamfightchaticts.tft_screen_capture import TFTTesseractScreenCapture
 from teamfightchaticts.tft_remote_control import TFTRemoteControl
 from teamfightchaticts.twitch_connection import TwitchConnection
-from teamfightchaticts.tft_overlay_ui import TFTRemoteControlOverlayUI
+from teamfightchaticts.twitch_chatbot_launcher_ui import TwitchChatbotLauncherUI
 from teamfightchaticts.twitch_chatbot import TwitchTFTChatbot
 
 
@@ -14,7 +14,7 @@ def main():
     tft_remote = TFTRemoteControl(tft_overlay_positions(), tft_screen_capture, MouseControl())
     twitch_connection = TwitchConnection(twitch_settings())
     twitch_chatbot = TwitchTFTChatbot(twitch_connection, tft_remote)
-    overlay_ui = TFTRemoteControlOverlayUI(
+    overlay_ui = TwitchChatbotLauncherUI(
         twitch_chatbot.start_bot, twitch_chatbot.stop_bot,
         ui_settings_of_selected_language())
     overlay_ui.display_as_daemon()

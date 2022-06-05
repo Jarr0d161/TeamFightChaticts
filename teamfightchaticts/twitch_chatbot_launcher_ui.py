@@ -4,7 +4,7 @@ import tkinter as tk
 import tkinter.font as tkFont
 
 
-class TFTRemoteControlOverlayUI(tk.Frame):
+class TwitchChatbotLauncherUI(tk.Frame):
     # TODO: get rid of inheritance if possible!!!
     def __init__(self, start_chatbot: Callable[[int], None],
                  stop_chatbot: Callable[[], None],
