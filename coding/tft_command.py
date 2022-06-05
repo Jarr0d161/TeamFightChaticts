@@ -44,4 +44,36 @@ class TFTCommand:
                 return type
         return TFTCmdType.INVALID
 
-    # TODO: move parser logic from tft_remote_control into properties
+    @property
+    def selected_shop_unit(self) -> int:
+        return int(self.cmd[4]) - 1
+
+    @property
+    def selected_augment(self) -> int:
+        return int(self.cmd[3]) - 1
+
+    @property
+    def unit_to_sell(self) -> str:
+        return self.cmd[4:6]
+
+    @property
+    def unit_to_place(self) -> str:
+        return self.cmd[0:2]
+
+    @property
+    def unit_place_aim(self) -> str:
+        return self.cmd[2:4]
+
+    @property
+    def row_to_collect(self) -> str:
+        return int(self.cmd[3:])
+
+    @property
+    def item_to_atttach(self) -> int:
+        slot_char = self.cmd[0].encode()[0]
+        index = slot_char - "a".encode()[0]
+        return index
+
+    @property
+    def unit_to_attach_to(self) -> str:
+        return self.cmd[1:]
