@@ -2,73 +2,43 @@ import os
 import json
 from typing import Dict, Any
 from dataclasses import dataclass
-import pandas as pd
-
-
-gui_output_dict_english = {
-    "ui_title": "TeamFightChaticts by Flanivia & Jarr0d",
-    "start_button_text": "Start",
-    "stop_button_text": "Stop",
-    "launch_usage": "With the start button the twitchbot starts its work.",
-    "auth_usage": "Enter auth for Twitch in config in the style auth=oauth:... and channel=channelname",
-    "msg_pool_count": "Message pool (count):",
-    "close": "Bot Closing"
-}
-
-
-gui_output_dict_deutsch = {
-    "ui_title": "TeamFightChaticts by Flanivia & Jarr0d",
-    "start_button_text": "Start",
-    "stop_button_text": "Stop",
-    "launch_usage": "Mit dem Start Button beginnt der Twitchbot seine Arbeit.",
-    "auth_usage": "Auth für Twitch in config eintragen im Stil auth=oauth:... und channel=channelname",
-    "msg_pool_count": "Nachrichten Pool (Anzahl):",
-    "close": "Bot wird geschlossen"
-}
-
-
-def read_config(config_filepath: str='../config/config.txt') -> pd.DataFrame:
-    # TODO: replace this with JSON
-    data = pd.read_csv(config_filepath, sep="=", index_col=0, header=None)
-    data.columns = ["value"]
-    return data
-
-
-def tesseract_file_path() -> str:
-    confList = read_config()
-    return os.path.join(confList.loc['tesseract'][0], 'tesseract.exe')
-
-
-def selected_language() -> str:
-    confList = read_config()
-    return confList.loc["language"]["value"]
-
-
-def ui_settings_of_selected_language() -> Dict[str, str]:
-    language = selected_language()
-    if language == "de":
-        return gui_output_dict_deutsch
-    elif language == "en":
-        return gui_output_dict_english
 
 
 @dataclass
 class TwitchSettings:
-    password: str
+    server: str
+    port: int
     channel: str
-    SERVER: str = "irc.twitch.tv"
-    PORT: int = 6667
-    chatbot_name: str = "TeamFightChaticts"
+    chatbot_name: str
+    password: str
+
+
+def app_settings(config_file: str='../config/app_settings.json') -> Dict[str, Any]:
+    with open(config_file, 'r') as file:
+        return json.load(file)
+
+
+def tesseract_rootdir() -> str:
+    return app_settings()['tesseract_rootdir']
+
+
+def ui_settings_of_selected_language(
+        translations_file: str=f'../config/translations_%LANG%.json') -> Dict[str, str]:
+    lang = app_settings()['language']
+    translations_file = translations_file.replace('%LANG%', lang)
+    with open(translations_file, 'r') as file:
+        return json.load(file)
 
 
 def twitch_settings() -> TwitchSettings:
-    confList = read_config()
-    password = confList.loc['auth'][0]
-    channel = confList.loc['channel'][0]
-    return TwitchSettings(password, channel)
+    twitch_conn = app_settings()['twitch_connection']
+    return TwitchSettings(
+        twitch_conn['server'],
+        twitch_conn['port'],
+        twitch_conn['channel'],
+        twitch_conn['chatbot_name'],
+        twitch_conn['password'])
 
 
-def tft_overlay_positions(config_filepath: str=
-        '../config/tft_overlay_positions.json') -> Dict[str, Any]:
-    with open(config_filepath, 'r') as file:
-        return json.load(file)
+def tft_overlay_positions() -> Dict[str, Any]:
+    return app_settings()['tft_overlay_positions']

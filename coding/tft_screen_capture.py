@@ -7,17 +7,15 @@ import cv2
 import numpy as np
 import pytesseract
 
-from .settings import tesseract_file_path
-
 
 @dataclass
 class TFTTesseractScreenCapture:
-    tesseract_filepath: str
-    tesseract_datadir: str='C:\\Program Files\\Tesseract-OCR\\tessdata'
+    tesseract_rootdir: str
 
     def __post_init__(self):
-        if os.path.exists(tesseract_file_path()):
-            pytesseract.pytesseract.tesseract_cmd = self.tesseract_filepath
+        if os.path.exists(self.tesseract_rootdir):
+            tesseract_exe = os.path.join(self.tesseract_rootdir, 'tesseract.exe')
+            pytesseract.pytesseract.tesseract_cmd = tesseract_exe
         else:
             raise ValueError('Der Pfad für Tesseract ist nicht korrekt!')
 
@@ -62,10 +60,10 @@ class TFTTesseractScreenCapture:
 
     def _scan_numeric_text_ocr(self, image: np.ndarray) -> str:
         tess_settings = "--psm 7 -c tessedit_char_whitelist=0123456789/"
-        tessdata_dir_config = f'{tess_settings} --tessdata-dir "{self.tesseract_datadir}"'
+        tess_params = f'{tess_settings} --tessdata-dir "{os.path.join(self.tesseract_rootdir, "tessdata")}"'
         grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         edge_filtered_image = cv2.threshold(grayscale, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
-        return pytesseract.image_to_string(edge_filtered_image, config=tessdata_dir_config).strip()
+        return pytesseract.image_to_string(edge_filtered_image, config=tess_params).strip()
 
     def _adaptive_threshold(self, image):
         return cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 61, 11)

@@ -21,7 +21,7 @@ class TwitchConnection:
         SUCCESS_TEXT = "End of /NAMES list"
 
         irc = socket.socket()
-        irc.connect((self.settings.SERVER, self.settings.PORT))
+        irc.connect((self.settings.server, self.settings.port))
 
         auth_msg = (
             f'PASS {self.settings.password}\n'

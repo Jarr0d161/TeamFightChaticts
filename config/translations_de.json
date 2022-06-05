@@ -1,0 +1,9 @@
+{
+    "ui_title": "TeamFightChaticts by Flanivia & Jarr0d",
+    "start_button_text": "Start",
+    "stop_button_text": "Stop",
+    "launch_usage": "Mit dem Start Button beginnt der Twitchbot seine Arbeit.",
+    "auth_usage": "Auth für Twitch in config eintragen im Stil auth=oauth:... und channel=channelname",
+    "msg_pool_count": "Nachrichten Pool (Anzahl):",
+    "close": "Bot wird geschlossen"
+}
