@@ -98,7 +98,7 @@ class TFTRemoteControl:
 
     def execute_cmd(self, tft_cmd: TFTCommand):
         if tft_cmd.type in self.cmd_handlers:
-            self.cmd_handlers[tft_cmd.type](tft_cmd.cmd) # TODO: refactor to put whole command object
+            self.cmd_handlers[tft_cmd.type](tft_cmd.cmd)
 
     def handle_shop_cmd(self, tft_cmd: TFTCommand):
         self.mouse.click_at(self.positions.default_click_pos)
