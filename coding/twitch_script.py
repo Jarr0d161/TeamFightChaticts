@@ -1,51 +1,118 @@
-from typing import List, Tuple
+import re
 import socket
 import threading
 import collections
+from typing import List, Callable
+from dataclasses import dataclass, field
 
 from .settings import *
 from .tft_remote_control import TFTRemoteControl
 
 
+@dataclass
+class TwitchConnection:
+    settings: TwitchSettings
+    irc: socket.socket=field(init=False, default=None)
+    msg_filters: List[str]=field(init=False, default_factory=lambda: list())
+    msg_listeners: List[Callable[[str], None]]=field(init=False, default_factory=lambda: list())
+    encoding: str='utf-8'
+    buffer_size: int=1024
+
+    def register_message_listener(self, listener: Callable[[str], None]):
+        self.msg_listeners.append(listener)
+
+    def connect_to_server(self):
+        SUCCESS_TEXT = "End of /NAMES list"
+
+        irc = socket.socket()
+        irc.connect((self.settings.SERVER, self.settings.PORT))
+
+        auth_msg = (
+            f'PASS {self.settings.password}\n'
+            f'NICK {self.settings.chatbot_name}\n'
+            f'JOIN #{self.settings.channel}\n'
+        )
+        irc.send(auth_msg.encode(self.encoding))
+
+        line = ''
+        while SUCCESS_TEXT not in line:
+            buffer = irc.recv(self.buffer_size)
+            buffer = buffer.decode(self.encoding)
+            print(buffer)
+            line = buffer.split("\n")[-1]
+
+        self.irc = irc
+
+    def receive_messages_as_daemon(self, is_term_requested: Callable[[], bool]=lambda: False):
+        self.irc.send("CAP REQ :twitch.tv/tags\r\n".encode(self.encoding))
+
+        is_pattern_match = lambda msg, pattern: re.match(pattern, msg) is not None
+        is_valid_msg = lambda msg: any(map(lambda f: is_pattern_match(msg, f), self.msg_filters))
+        is_ping_msg = lambda msg: "PING :tmi.twitch.tv" in msg
+
+        remainder = ''
+        while True:
+            try:
+                # TODO: make sure this doesn't crash when processing all kinds of emoticons
+                readbuffer = self.irc.recv(self.buffer_size).decode(self.encoding)
+            except:
+                readbuffer = ""
+            lines = readbuffer.split("\r\n")
+            lines[0] = remainder + lines[0]
+            remainder = lines[-1]
+
+            # handle ping-pong messages to keep the connection alive
+            if any(map(lambda line: is_ping_msg(line), lines)):
+                self._send_twitch_pong()
+            lines = [line for line in lines if not is_ping_msg(line)]
+
+            messages = [self._parse_message_from_line(line) for line in lines]
+            messages = list(filter(lambda msg: is_valid_msg(msg), messages))
+
+            for msg in messages:
+                self._notify_listeners(msg)
+
+            if is_term_requested():
+                self.irc.close()
+                break
+
+    def _send_twitch_pong(self):
+        msg = "PONG :tmi.twitch.tv\r\n".encode(self.encoding)
+        self.irc.send(msg)
+        print(msg)
+
+    def _parse_message_from_line(self, line: str) -> str:
+        # TODO: apply a regex as pre-pass to ensure that this logic doesn't crash
+        colons = line.count(":")
+        line_parts = line.split(":", colons)
+        user = line_parts[colons-1].split("!", 1)[0]
+        message = line_parts[2] if len(line_parts) >= 3 else ""
+        print(f'{user} : {message}')
+        return message
+
+    def _notify_listeners(self, message: str):
+        for listener in self.msg_listeners:
+            listener(message)
+
+
 class TwitchBot:
-    def __init__(self, chaos=False):
+    def __init__(self, connection: TwitchConnection, chaos: bool=False):
         self.chaos = chaos
         self.voll = False
 
-        self.ui_settings = ui_settings_of_selected_language()
+        self.connection = connection
         self.tft_remote_control = TFTRemoteControl()
-        self.twitch_channel, self.irc = self.connect_to_twitch()
+        self.ui_settings = ui_settings_of_selected_language()
+        self.twitch_setings = twitch_settings()
 
         # TODO: put the chatbot state into a dataclass
         self.message = ""
         self.old_message = ''
-        self.user = ""
-        self.pool = pool
-        print("Pool ist bei: "+str(self.pool))
-        self.counter = self.pool
-        self.tempCount = 0
+        self.counter = 0
         self.messagelist: List[str] = []
         self.rein = False
-        self.diff = 0
-        self.bCom = False
-        self.stopRunning = False
-        self.lockActivated = False
         self.thread = None
         self.stop_thread = threading.Event()
-
-    def connect_to_twitch(self) -> Tuple[str, socket.socket]:
-        # TODO: put all twitch settings in one dataclass
-        SERVER = "irc.twitch.tv"
-        PORT = 6667
-        BOT = "TeamFightChaticts"
-        PASS = twitch_password()
-        # OWNER = twitch_channel_owner()
-        channel = twitch_channel_to_be_observed()
-
-        irc = socket.socket()
-        irc.connect((SERVER, PORT))
-        irc.send(f'PASS {PASS}\nNICK {BOT}\nJOIN #{channel}\n'.encode())
-        return irc, channel
 
     def reset_vars(self):
         #self.messagelist.clear()
@@ -63,40 +130,10 @@ class TwitchBot:
         else:
             self.message = ""
 
-    def join_chat(self):
-        Loading = True
-        while Loading:
-            readbuffer_join = self.irc.recv(1024)
-            readbuffer_join = readbuffer_join.decode()
-            print(readbuffer_join)
-            for line in readbuffer_join.split("\n")[0:-1]:
-                print(line)
-                Loading = self.loading_omplete(line)
-
-    def loading_omplete(self, line: str) -> bool:
-        is_load_complete = "End of /NAMES list" not in line
-        if not is_load_complete:
-            print(f"{self.ui_settings['loadingComplete']} {self.twitch_channel}' Channel!")
-        return is_load_complete
-
-    def parse_submitting_user(self, line: str) -> str:
-        colons = line.count(":")
-        colonless = colons-1
-        separate = line.split(":", colons)
-        user = separate[colonless].split("!", 1)[0]
-        return user
-
-    def parse_tft_command(self, line: str) -> str:
-        try:
-            colons = line.count(":")
-            message = (line.split(":", colons))[2]
-        except:
-            message = ""
-        return message
-
     def start_bot(self, pool_size: int):
         self.stop_thread.clear()
-        self.thread = threading.Thread(target=self.twitch)
+        self.counter = pool_size
+        self.thread = threading.Thread(target=self.receive_twitch_messages)
         self.thread.start()
 
     def stop(self):
@@ -104,77 +141,36 @@ class TwitchBot:
         self.thread.join()
         self.thread = None
 
-    def twitch(self):
-        # TODO: invert dependency between overlay ui and chat bot, decouple using callback funcions
+    def receive_twitch_messages(self):
+        self.connection.connect_to_server()
+        self.connection.register_message_listener(self.process_tft_cmd)
+        self.connection.receive_messages_as_daemon()
+        # TODO: use the is_term_requested callback to gracefully exit chatbot thread
 
-        self.join_chat()
-        self.irc.send("CAP REQ :twitch.tv/tags\r\n".encode())
+    def process_tft_cmd(self, message: str):
+        self.message = message = message.lower()
 
-        while True:
-            self.process_twitch_messages()
+        if not self.rein and not self.chaos:
+            self.add_message(message)
+        else:
+            self.tft_remote_control.gamecontrol(message)
+            self.reset_vars()
 
-            if self.stop_thread.is_set():
-                self.irc.close()
-                break
-
-    def process_twitch_messages(self):
-        try:
-            readbuffer = self.irc.recv(1024).decode()
-        except:
-            readbuffer = ""
-        for line in readbuffer.split("\r\n"):
-            if line == "":
-                continue
-            if "PING :tmi.twitch.tv" in line:
-                # print(line)
-                self.send_twitch_pong()
-                continue
-            else:
-                # TODO: add a TFT command parser to ensure that the command is valid -> simplify error handing
-                self.execute_tft_command(line)
-
-    def send_twitch_pong(self):
-        msgg = "PONG :tmi.twitch.tv\r\n".encode()
-        self.irc.send(msgg)
-        print(msgg)
-
-    def execute_tft_command(self, line: str):
-        try:
-            user = self.parse_submitting_user(line)
-            message = self.parse_tft_command(line)
-            print(f'{user} : {message}')
-
-            self.message = message = message.lower()
-            if not self.rein and not self.chaos:
-                self.add_message(message)
-            else:
-                self.tft_remote_control.gamecontrol(message)
-                self.reset_vars()
-
-            if self.voll and not self.chaos:
-                if message != self.old_message:
-                    print(f"{self.ui_settings['foundCommand']} {message}")
-                    self.rein = True
-                    self.voll = False
-                    self.messagelist.clear()
-                    self.old_message = message
-                    self.message = message = message.lower()
-                    if not self.rein and not self.chaos:
-                        self.add_message(message)
-                    else:
-                        self.tft_remote_control.gamecontrol(message)
-                        self.reset_vars()
+        if self.voll and not self.chaos:
+            if message != self.old_message:
+                print(f"{self.ui_settings['foundCommand']} {message}")
+                self.rein = True
+                self.voll = False
+                self.messagelist.clear()
+                self.old_message = message
+                self.message = message = message.lower()
+                if not self.rein and not self.chaos:
+                    self.add_message(message)
                 else:
-                    print(self.ui_settings['commandWontRepeat'])
-                    self.messagelist = list(filter((message).__ne__, self.messagelist))
-                    print(self.messagelist)
+                    self.tft_remote_control.gamecontrol(message)
                     self.reset_vars()
-
-        except Exception:
-            pass
-
-
-if __name__ == '__main__':
-    bot = TwitchBot(chaos=False, pool=1)
-    t1 = threading.Thread(target = bot.twitch())
-    t1.start()
+            else:
+                print(self.ui_settings['commandWontRepeat'])
+                self.messagelist = list(filter((message).__ne__, self.messagelist))
+                print(self.messagelist)
+                self.reset_vars()

@@ -1,5 +1,6 @@
 import os
 from typing import Dict, Any
+from dataclasses import dataclass
 import pandas as pd
 
 
@@ -57,11 +58,17 @@ def ui_settings_of_selected_language() -> Dict[Any, str]:
         return gui_output_dict_english
 
 
-def twitch_password() -> str:
-    confList = read_config()
-    return confList.loc['auth'][0]
+@dataclass
+class TwitchSettings:
+    password: str
+    channel: str
+    SERVER: str = "irc.twitch.tv"
+    PORT: int = 6667
+    chatbot_name: str = "TeamFightChaticts"
 
 
-def twitch_channel_to_be_observed() -> str:
+def twitch_settings() -> TwitchSettings:
     confList = read_config()
-    return confList.loc['channel'][0]
+    password = confList.loc['auth'][0]
+    channel = confList.loc['channel'][0]
+    return TwitchSettings(password, channel)
