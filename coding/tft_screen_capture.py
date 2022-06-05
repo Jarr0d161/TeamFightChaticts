@@ -24,7 +24,7 @@ class TFTTesseractScreenCapture:
         screenshot = self._scale_screenshot(screenshot, 4)
         ocr_text = self._scan_numeric_text_ocr(np.array(screenshot))
 
-        if not '/' in ocr_text:
+        if '/' not in ocr_text:
             return None
         parts = ocr_text.split('/')
 
