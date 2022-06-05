@@ -5,6 +5,7 @@ import threading
 from typing import Tuple, List
 from enum import IntEnum
 import pyautogui
+pyautogui.FAILSAFE = False
 
 from .tft_screen_capture import capture_level, capture_gold, capture_item_locations
 
