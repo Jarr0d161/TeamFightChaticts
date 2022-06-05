@@ -79,7 +79,7 @@ class TFTRemoteControl:
     positions: TFTRemoteControlPositions
     screen_capture: TFTScreenCapture
     mouse: MouseControl
-    cmd_handlers: Dict[TFTCmdType, Callable[[TFTCommand]], None] = field(init=False)
+    cmd_handlers: Dict[TFTCmdType, Callable[[TFTCommand], None]] = field(init=False)
 
     def __post_init__(self):
         self.cmd_handlers = {

@@ -2,8 +2,8 @@ import socket
 from typing import List, Callable
 from dataclasses import dataclass, field
 
-from .settings import TwitchSettings
-from .tft_command import TFTCommand
+from teamfightchaticts.settings import TwitchSettings
+from teamfightchaticts.tft_command import TFTCommand
 
 
 @dataclass

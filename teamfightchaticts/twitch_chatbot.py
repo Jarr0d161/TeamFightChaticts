@@ -3,9 +3,9 @@ from time import sleep
 from typing import Dict
 from dataclasses import dataclass, field
 
-from .tft_command import TFTCommand
-from .twitch_connection import TwitchConnection
-from .tft_remote_control import TFTRemoteControl
+from teamfightchaticts.tft_command import TFTCommand
+from teamfightchaticts.twitch_connection import TwitchConnection
+from teamfightchaticts.tft_remote_control import TFTRemoteControl
 
 
 @dataclass
@@ -31,7 +31,7 @@ class TwitchTFTChatbot:
     connection: TwitchConnection
     tft_remote_control: TFTRemoteControl
     state: TwitchTFTChatbotState=TwitchTFTChatbotState()
-    thread = threading.Thread=field(init=False, default=None)
+    thread: threading.Thread=field(init=False, default=None)
     shutdown_requested: bool=False
 
     def start_bot(self, pool_size: int):

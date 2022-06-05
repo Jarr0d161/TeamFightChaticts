@@ -16,9 +16,9 @@ Das GIT-Repository beinhaltet einen Twitch-Chat-Bot, welcher Chatnachrichten in 
 
 ## Programm ausführen
 
-* coding/TFTwitch.py ausführen 
+* Modul *teamfightchaticts* ausführen 
   * Eingabeaufforderung (Terminal, cmd) im root-git-Ordner öffnen
-  * Eingabe: **python3 coding/main.py**
+  * Eingabe: **python3 -m teamfightchaticts**
 * Pool-Größe (Anzahl gleicher Nachrichten) eintragen und Start drücken
 * Stop trennt die Verbindung zum TwitchChat
 * Hinweis: Viele Werte sind aktuell noch "hardcoded" auf 1900x1080p, beim Starten von TFT beachten!

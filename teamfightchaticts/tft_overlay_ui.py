@@ -34,6 +34,7 @@ class TFTRemoteControlOverlayUI(tk.Frame):
         alignstr = '%dx%d+%d+%d' % (width, height, align_width, align_height)
         parent.geometry(alignstr)
         parent.resizable(width=False, height=False)
+        return parent
 
     def load_poolsize_input(self) -> tk.Entry:
         poolsize_input = tk.Entry(self.parent)
