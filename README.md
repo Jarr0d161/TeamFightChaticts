@@ -23,7 +23,7 @@ cd TeamFightChaticts
 Open the app_settings.json file with a text editor of choice.
 
 ```sh
-# Linux
+# Linux / Mac
 gedit config/app_settings.json
 ```
 
