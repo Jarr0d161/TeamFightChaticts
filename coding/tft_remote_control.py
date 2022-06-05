@@ -9,23 +9,22 @@ from .tft_command import TFTCommand, TFTCmdType
 from .tft_screen_capture import capture_level, capture_gold, capture_item_locations
 
 
-def click_at(loc: Tuple[int, int]):
-    pyautogui.moveTo(loc[0], loc[1])
-    pyautogui.mouseDown(button="left")
-    pyautogui.mouseUp(button="left")
+class MouseControl:
+    def click_at(self, loc: Tuple[int, int]):
+        pyautogui.moveTo(loc[0], loc[1])
+        pyautogui.mouseDown(button="left")
+        pyautogui.mouseUp(button="left")
 
+    def right_click_at(self, loc: Tuple[int, int]):
+        pyautogui.moveTo(loc[0], loc[1])
+        pyautogui.mouseDown(button="right")
+        pyautogui.mouseUp(button="right")
 
-def right_click_at(loc: Tuple[int, int]):
-    pyautogui.moveTo(loc[0], loc[1])
-    pyautogui.mouseDown(button="right")
-    pyautogui.mouseUp(button="right")
-
-
-def mouse_drag(from_loc: Tuple[int, int], to_loc: Tuple[int, int]):
-    pyautogui.moveTo(from_loc[0], from_loc[1])
-    pyautogui.mouseDown(button="left")
-    pyautogui.moveTo(to_loc[0], to_loc[1])
-    pyautogui.mouseUp(button="left")
+    def drag(self, from_loc: Tuple[int, int], to_loc: Tuple[int, int]):
+        pyautogui.moveTo(from_loc[0], from_loc[1])
+        pyautogui.mouseDown(button="left")
+        pyautogui.moveTo(to_loc[0], to_loc[1])
+        pyautogui.mouseUp(button="left")
 
 
 class TFTRemoteControlPositions:
@@ -77,6 +76,7 @@ class TFTRemoteControlPositions:
 @dataclass
 class TFTRemoteControl:
     positions: TFTRemoteControlPositions=TFTRemoteControlPositions()
+    mouse: MouseControl=MouseControl()
     cmd_handlers: Dict[TFTCmdType, Callable[[TFTCommand]], None] = field(init=False)
 
     def __post_init__(self):
@@ -99,26 +99,26 @@ class TFTRemoteControl:
             self.cmd_handlers[tft_cmd.type](tft_cmd.cmd) # TODO: refactor to put whole command object
 
     def handle_shop_cmd(self, tft_cmd: TFTCommand):
-        click_at(self.positions.default_click_pos)
+        self.mouse.click_at(self.positions.default_click_pos)
         unit = tft_cmd.selected_shop_unit
         shop_pos = self.positions.shop_list[unit]
-        click_at(shop_pos)
+        self.mouse.click_at(shop_pos)
 
     def handle_augment_cmd(self, tft_cmd: TFTCommand):
-        click_at(self.positions.default_click_pos)
+        self.mouse.click_at(self.positions.default_click_pos)
         augment_pos = self.positions.augment_list[tft_cmd.selected_augment]
-        click_at(augment_pos)
+        self.mouse.click_at(augment_pos)
 
     def handle_lock_or_unlock_cmd(self, _: TFTCommand):
-        click_at(self.positions.default_click_pos)
-        click_at(self.positions.lock_button)
+        self.mouse.click_at(self.positions.default_click_pos)
+        self.mouse.click_at(self.positions.lock_button)
 
     def handle_carousel_cmd(self, _: TFTCommand):
-        click_at(self.positions.default_click_pos)
-        right_click_at(self.positions.carousel_aim)
+        self.mouse.click_at(self.positions.default_click_pos)
+        self.mouse.right_click_at(self.positions.carousel_aim)
 
     def handle_collect_cmd(self, _: TFTCommand):
-        click_at(self.positions.default_click_pos)
+        self.mouse.click_at(self.positions.default_click_pos)
         items = self.compute_item_drop_positions()
         if items:
             self.collect_dropped_items_at(items)
@@ -138,11 +138,11 @@ class TFTRemoteControl:
 
         for pos_from, pos_to in zip(locations[:-1], locations[1:]):
             distance = math.dist(pos_from, pos_to)
-            right_click_at(pos_to)
+            self.mouse.right_click_at(pos_to)
             if pos_to != self.positions.avatar_default:
                 time.sleep(distance / self.positions.avatar_velocity)
 
-        click_at(self.positions.default_click_pos)
+        self.mouse.click_at(self.positions.default_click_pos)
 
     def handle_levelup_cmd(self, tft_cmd: TFTCommand):
         level = capture_level()
@@ -156,39 +156,39 @@ class TFTRemoteControl:
         levelup_clicks -= 1 if tft_cmd.cmd == 'lvl' and xp_diff_to_level % 4 <= 2 else 0
 
         while levelup_clicks > 0 and levelup_clicks * 4 <= gold:
-            click_at(self.positions.levelup_button)
+            self.mouse.click_at(self.positions.levelup_button)
             levelup_clicks -= 1
 
-        click_at(self.positions.default_click_pos)
+        self.mouse.click_at(self.positions.default_click_pos)
 
     def handle_roll_cmd(self, _: TFTCommand):
-        click_at(self.positions.roll_button)
-        click_at(self.positions.default_click_pos)
+        self.mouse.click_at(self.positions.roll_button)
+        self.mouse.click_at(self.positions.default_click_pos)
 
     def handle_sell_bench_unit_cmd(self, tft_cmd: TFTCommand):
-        click_at(self.positions.default_click_pos)
+        self.mouse.click_at(self.positions.default_click_pos)
         unit_pos = self.positions.by_field(tft_cmd.unit_to_sell)
-        mouse_drag(unit_pos, self.positions.shop_list[2])
+        self.mouse.drag(unit_pos, self.positions.shop_list[2])
 
     def handle_place_unit_cmd(self, tft_cmd: TFTCommand):
-        click_at(self.positions.default_click_pos)
+        self.mouse.click_at(self.positions.default_click_pos)
         origin_pos = self.positions.by_field(tft_cmd.unit_to_place)
         aim_pos = self.positions.by_field(tft_cmd.unit_place_aim)
-        mouse_drag(origin_pos, aim_pos)
+        self.mouse.drag(origin_pos, aim_pos)
 
     def handle_collect_row_cmd(self, tft_cmd: TFTCommand):
-        click_at(self.positions.default_click_pos)
+        self.mouse.click_at(self.positions.default_click_pos)
         row = tft_cmd.row_to_collect
         start_pos = ((self.positions.board_locations[row])[0][0] - 100,
                      (self.positions.board_locations[row])[0][1])
-        right_click_at(start_pos)
+        self.mouse.right_click_at(start_pos)
         time.sleep(2)
         end_pos = ((self.positions.board_locations[row])[6][0] + 100,
                    (self.positions.board_locations[row])[6][1])
-        right_click_at(end_pos)
+        self.mouse.right_click_at(end_pos)
 
     def handle_attach_item_cmd(self, tft_cmd: TFTCommand):
-        click_at(self.positions.default_click_pos)
+        self.mouse.click_at(self.positions.default_click_pos)
         item_pos = self.positions.item_list[tft_cmd.item_to_atttach]
         unit_pos = self.positions.by_field(tft_cmd.unit_to_attach_to)
-        mouse_drag(item_pos, unit_pos)
+        self.mouse.drag(item_pos, unit_pos)
