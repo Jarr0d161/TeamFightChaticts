@@ -58,6 +58,8 @@ class TFTRemoteControlPositions:
         self.item_list = [(290, 755), (335, 725), (310, 705), (350, 660), (410, 665), (325, 630), (385, 630), (445, 630), (340, 590), (395, 590)]
         self.shop_list=[(570, 1000), (770, 1000), (970, 1000), (1170, 1000), (1370, 1000)]
         self.com_list = [(370, 980), (370, 1060)]
+        self.avatar_default = (470, 650)
+        self.avatar_velocity = 150
 
     def by_field(self, field_id: str) -> Tuple[int, int]:
         row = field_id[0]
@@ -129,7 +131,6 @@ class TFTRemoteControl:
     def handle_collect_cmd(self, _: TFTCommand):
         self.click_in()
         items = self.compute_item_drop_positions()
-        # print('Items:', items)
         if items:
             self.collect_dropped_items_at(items)
 
@@ -142,21 +143,15 @@ class TFTRemoteControl:
         return [(p[0] + SEARCH_BOX[0] + OFFSET, p[1] + SEARCH_BOX[1] + OFFSET) for p in item_locs]
 
     def collect_dropped_items_at(self, locations: List[Tuple[int, int]]):
-        # TODO: set this value to the units (in pixels) that can be walked by the avatar within a second
-        LL_VELOCITY = 150
-        LL_DEFAULT_POS = (470, 650)
-
         # TODO: use Dijkstra algorithm to compute the shortest path instead of randomly walking between items
-
-        # walk towards first location
-        locations.insert(0, LL_DEFAULT_POS)
-        locations.append(LL_DEFAULT_POS)
+        locations.insert(0, self.positions.avatar_default)
+        locations.append(self.positions.avatar_default)
         for pos_from, pos_to in zip(locations[:-1], locations[1:]):
             distance = math.dist(pos_from, pos_to)
             pyautogui.click(pos_to[0], pos_to[1], button='right')
             pyautogui.mouseUp(button='right')
-            if pos_to != LL_DEFAULT_POS:
-                time.sleep(distance / LL_VELOCITY)
+            if pos_to != self.positions.avatar_default:
+                time.sleep(distance / self.positions.avatar_velocity)
 
         self.click_in()
 
@@ -172,7 +167,6 @@ class TFTRemoteControl:
         xp_diff_to_level = total_xp - act_xp
         levelup_clicks = math.ceil(xp_diff_to_level / 4)
         levelup_clicks -= 1 if tft_cmd.cmd == 'lvl' and xp_diff_to_level % 4 <= 2 else 0
-        # print(f'{act_xp} von {total_xp} XP, Kosten: {levelup_clicks * 4} Gold')
 
         pyautogui.moveTo(375, 960)
         while levelup_clicks > 0 and levelup_clicks * 4 <= gold:
