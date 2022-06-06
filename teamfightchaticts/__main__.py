@@ -14,9 +14,7 @@ def main():
     tft_remote = TFTRemoteControl(tft_overlay_positions(), tft_screen_capture, MouseControl())
     twitch_connection = TwitchConnection(twitch_settings())
     twitch_chatbot = TwitchTFTChatbot(twitch_connection, tft_remote)
-    overlay_ui = TwitchChatbotLauncherUI(
-        twitch_chatbot.start_bot, twitch_chatbot.stop_bot,
-        ui_settings_of_selected_language())
+    overlay_ui = TwitchChatbotLauncherUI(twitch_chatbot, ui_settings_of_selected_language())
     overlay_ui.display_as_daemon()
 
 
