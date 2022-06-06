@@ -11,14 +11,13 @@ Pillow = "==9.1.1"
 PyAutoGUI = "==0.9.53"
 
 [dev-packages]
-black = "*"
 pytest = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.9"
 
 [scripts]
-format = "black teamfightchaticts"
-format-check = "black --check teamfightchaticts"
+lint = "pylint teamfightchaticts"
 test = "pytest"
 start = "python3 -m teamfightchaticts"

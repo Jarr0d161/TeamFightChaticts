@@ -27,7 +27,7 @@ jobs:
           pipenv install --dev
       - name: check-format
         run: |
-          pipenv run format-check
+          pipenv run lint
       - name: run unittests
         run: |
           pipenv run test
