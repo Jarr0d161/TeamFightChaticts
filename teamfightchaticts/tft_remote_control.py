@@ -134,7 +134,8 @@ class TFTRemoteControl:
         return [(p[0] + box[0] + offset, p[1] + box[1] + offset) for p in item_locs]
 
     def collect_dropped_items_at(self, locations: List[Tuple[int, int]]):
-        # TODO: use Dijkstra algorithm to compute the shortest path instead of randomly walking between items
+        # TODO: use Dijkstra algorithm to compute the shortest path
+        #       instead of randomly walking between items
         locations.insert(0, self.positions.avatar_default)
         locations.append(self.positions.avatar_default)
 

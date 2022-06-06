@@ -51,7 +51,8 @@ class TFTTesseractScreenCapture:
         return [(match[0], match[1]) for template_file in ICON_FILES
                 for match in self._find_image_matches(thresh, template_file)]
 
-    def _capture_screenshot(self, box: Tuple[int, int, int, int]=None, crop: Tuple[int, int, int, int]=None) -> Image:
+    def _capture_screenshot(self, box: Tuple[int, int, int, int]=None,
+                            crop: Tuple[int, int, int, int]=None) -> Image:
         return ImageGrab.grab(bbox=box).crop(crop) if crop else ImageGrab.grab(bbox=box)
 
     def _scale_screenshot(self, screenshot: Image, factor):
@@ -60,13 +61,18 @@ class TFTTesseractScreenCapture:
 
     def _scan_numeric_text_ocr(self, image: np.ndarray) -> str:
         tess_settings = "--psm 7 -c tessedit_char_whitelist=0123456789/"
-        tess_params = f'{tess_settings} --tessdata-dir "{os.path.join(self.tesseract_rootdir, "tessdata")}"'
+        tess_datadir = os.path.join(self.tesseract_rootdir, "tessdata")
+        tess_params = f'{tess_settings} --tessdata-dir "{tess_datadir}"'
         grayscale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        edge_filtered_image = cv2.threshold(grayscale, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
-        return pytesseract.image_to_string(edge_filtered_image, config=tess_params).strip()
+        edge_filtered_image = cv2.threshold(
+            grayscale, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+        return pytesseract.image_to_string(
+            edge_filtered_image, config=tess_params).strip()
 
     def _adaptive_threshold(self, image):
-        return cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 61, 11)
+        return cv2.adaptiveThreshold(
+            image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+            cv2.THRESH_BINARY_INV, 61, 11)
 
     def _find_image_matches(self, image, template_filepath: str, threshold=0.5) -> list:
         template: np.ndarray = cv2.imread(template_filepath, 0)
