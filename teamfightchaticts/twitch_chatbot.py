@@ -10,9 +10,9 @@ from teamfightchaticts.tft_remote_control import TFTRemoteControl
 
 @dataclass
 class TwitchTFTChatbotState:
-    last_cmd: TFTCommand = TFTCommand("")
-    cmd_counts: Dict[TFTCommand, int] = field(default_factory=lambda: dict())
-    pool: int = 10
+    last_cmd: TFTCommand=TFTCommand('')
+    cmd_counts: Dict[TFTCommand, int]=field(default_factory=lambda: dict())
+    pool: int=10
 
     def update_state(self, tft_cmd: TFTCommand):
         self.cmd_counts[tft_cmd] += 1
@@ -23,18 +23,16 @@ class TwitchTFTChatbotState:
 
     @property
     def cmd_to_execute(self) -> TFTCommand:
-        return next(
-            filter(lambda cmd: self.cmd_counts[cmd] >= self.pool, self.cmd_counts), None
-        )
+        return next(filter(lambda cmd: self.cmd_counts[cmd] >= self.pool, self.cmd_counts), None)
 
 
 @dataclass
 class TwitchTFTChatbot:
     connection: TwitchConnection
     tft_remote_control: TFTRemoteControl
-    state: TwitchTFTChatbotState = TwitchTFTChatbotState()
-    thread: threading.Thread = field(init=False, default=None)
-    shutdown_requested: bool = False
+    state: TwitchTFTChatbotState=TwitchTFTChatbotState()
+    thread: threading.Thread=field(init=False, default=None)
+    shutdown_requested: bool=False
 
     def start_bot(self, pool_size: int):
         if self.shutdown_requested:
@@ -64,7 +62,7 @@ class TwitchTFTChatbot:
 
         # same command twice
         if cmd_exec == self.state.last_cmd:
-            self.state.last_cmd = TFTCommand("")
+            self.state.last_cmd = TFTCommand('')
             return
 
         # command is ok, go execute it

@@ -4,16 +4,11 @@ import numpy as np
 
 
 def points_to_graph(points: List[Tuple[int, int]]) -> np.ndarray:
-
-    distances = [
-        ((i, j), math.dist(points[i], points[j]))
-        for i in range(points)
-        for j in range(i)
-    ]
-    graph = [
-        [distances[max(i, j) * len(points) + min(i, j)] for j in range(len(points))]
-        for i in range(len(points))
-    ]
+    
+    distances = [((i, j), math.dist(points[i], points[j]))
+                 for i in range(points) for j in range(i)]
+    graph = [[distances[max(i, j) * len(points) + min(i, j)] for j in range(len(points))]
+             for i in range(len(points))]
     return np.array(graph)
 
 
@@ -22,9 +17,7 @@ def shortest_path(start_pos: int, end_pos: int, adj_matrix: np.ndarray) -> List[
     return unroll_shortest_path(start_pos, end_pos, backtrace)
 
 
-def unroll_shortest_path(
-    start_pos: int, end_pos: int, backtrace: List[int]
-) -> List[int]:
+def unroll_shortest_path(start_pos: int, end_pos: int, backtrace: List[int]) -> List[int]:
     path = [end_pos]
     pos = end_pos
 
