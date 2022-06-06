@@ -1,0 +1,35 @@
+name: cicd pipeline
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  validation: 
+    name: Validation job
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+      - id: cache-pipenv
+        uses: actions/cache@v1
+        with:
+          path: ~/.local/share/virtualenvs
+          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+      - name: Install dependencies
+        # TODO: enable caching if lockfile issue is fixed
+        # if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        run: |
+          python3 -m pip install pipenv
+          pipenv install --dev
+      # TODO: enable linting if codebase is clean
+      # - name: lint sourcecode
+      #   run: |
+      #     pipenv run lint
+      - name: run unittests
+        run: |
+          pipenv run test
