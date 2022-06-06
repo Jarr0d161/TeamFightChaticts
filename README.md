@@ -75,18 +75,24 @@ Following table shows all commands supported:
 | (itemslot)(field) | Run (upwards) in item carousel | bw3               |
 | lock / unlock     | Lock / unlock store            |                   |
 
+## Contribution
+This is a community project, so please let us know if you've got a great idea!
 
-## Development setup
+As always, be polite and show appreciation for each other during the dev process.
+This is supposed to be a fun project!
 
-- Install pipenv 
-  - Unix `python3 -m pip install pipenv`
-  - Windows `python -m pip install pipenv`
-- Install dependencies `pipenv install`
+## Development
+This section outlines how to set up the development process.
 
-### Pipenv scripts
-- `pipenv run test` will resolve and run unittests
-  - In order to resolve your test file please prefix the filename with _test_
-- `pipenv run lint` will lint the code in the [teamfightchatics](./teamfightchatics) folder using pylint
+### Project Structure
+-  [source code](./teamfightchaticts): contains all Python modules
+   (entrypoint is in [\_\_main\_\_.py](./teamfightchaticts/__main__.py) by convention)
+-  [config](./config): contains all configurations, split up in app_settings.json and translations_[lang].json
+-  [resources](./images): contains all app resources
+
+### Build / Test / Lint
+- `pipenv run test` will run all registered unit tests (with pytest)
+- `pipenv run lint` will lint the code (with pylint)
 - `pipenv run start` will run the teamfightchaticts module
 
 ## License
