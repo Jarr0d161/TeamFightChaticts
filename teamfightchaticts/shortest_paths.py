@@ -4,7 +4,6 @@ import numpy as np
 
 
 def points_to_graph(points: List[Tuple[int, int]]) -> np.ndarray:
-    
     distances = [((i, j), math.dist(points[i], points[j]))
                  for i in range(points) for j in range(i)]
     graph = [[distances[max(i, j) * len(points) + min(i, j)] for j in range(len(points))]

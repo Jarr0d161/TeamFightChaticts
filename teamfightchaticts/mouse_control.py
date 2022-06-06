@@ -5,6 +5,7 @@ pyautogui.FAILSAFE = False
 
 
 class MouseControl:
+    # pylint: disable=no-self-use
     def click_at(self, loc: Tuple[int, int]):
         pyautogui.moveTo(loc[0], loc[1])
         pyautogui.mouseDown(button="left")

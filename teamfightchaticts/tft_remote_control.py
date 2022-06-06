@@ -29,6 +29,7 @@ class MouseControl(Protocol):
 
 
 class TFTRemoteControlPositions:
+    # pylint: disable=too-many-instance-attributes
     # TODO: compute the positions as properties depending on the screen resolution
     def __init__(self, settings: Dict[str, Any]):
         self.row_1 = settings['row_1']
@@ -73,6 +74,8 @@ class TFTRemoteControlPositions:
         if row.startswith('r'):
             return self.row_4[col-1]
 
+        raise ValueError("invalid field_id!")
+
 
 @dataclass
 class TFTRemoteControl:
@@ -97,8 +100,8 @@ class TFTRemoteControl:
         }
 
     def execute_cmd(self, tft_cmd: TFTCommand):
-        if tft_cmd.type in self.cmd_handlers:
-            self.cmd_handlers[tft_cmd.type](tft_cmd.cmd)
+        if tft_cmd.cmd_type in self.cmd_handlers:
+            self.cmd_handlers[tft_cmd.cmd_type](tft_cmd.cmd)
 
     def handle_shop_cmd(self, tft_cmd: TFTCommand):
         self.mouse.click_at(self.positions.default_click_pos)

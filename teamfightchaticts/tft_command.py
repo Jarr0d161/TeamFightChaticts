@@ -38,10 +38,10 @@ class TFTCommand:
         })
 
     @property
-    def type(self) -> TFTCmdType:
-        for type in self.cmd_patterns:
-            if re.match(self.cmd_patterns[type], self.cmd):
-                return type
+    def cmd_type(self) -> TFTCmdType:
+        for cmd_type in self.cmd_patterns:
+            if re.match(self.cmd_patterns[cmd_type], self.cmd):
+                return cmd_type
         return TFTCmdType.INVALID
 
     @property

@@ -22,7 +22,7 @@ def tesseract_rootdir() -> str:
 
 
 def ui_settings_of_selected_language(
-        translations_file: str=f'./config/translations_%LANG%.json') -> Dict[str, str]:
+        translations_file: str='./config/translations_%LANG%.json') -> Dict[str, str]:
     lang = app_settings()['language']
     translations_file = translations_file.replace('%LANG%', lang)
     with open(translations_file, 'r') as file:

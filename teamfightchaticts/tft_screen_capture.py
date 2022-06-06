@@ -1,6 +1,6 @@
 import os
 from typing import Tuple, List
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from PIL import ImageGrab, Image
 
 import cv2
@@ -11,6 +11,8 @@ import pytesseract
 @dataclass
 class TFTTesseractScreenCapture:
     tesseract_rootdir: str
+    item_icon_files: List[str] = field(default_factory=
+        lambda:['./images/white.png', './images/blue.png'])
 
     def __post_init__(self):
         if os.path.exists(self.tesseract_rootdir):
@@ -34,28 +36,28 @@ class TFTTesseractScreenCapture:
         return int(act_xp), int(total_xp)
 
     def capture_gold(self) -> int:
-        screenshot = self._capture_screenshot(box=(870, 880, 905, 910))
-        screenshot = self._scale_screenshot(screenshot, 4)
+        screenshot = TFTTesseractScreenCapture._capture_screenshot(box=(870, 880, 905, 910))
+        screenshot = TFTTesseractScreenCapture._scale_screenshot(screenshot, 4)
         ocr_text = self._scan_numeric_text_ocr(np.array(screenshot))
         return int(ocr_text) if ocr_text.isdecimal() else None
 
     def capture_item_locations(self, crop: Tuple[int, int, int, int]) -> List[Tuple[int, int]]:
-        ICON_FILES = ['./images/white.png', './images/blue.png']
-
         screenshot = self._capture_screenshot(crop=crop)
         grayscale = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
         dim = (int(grayscale.shape[0]), int(grayscale.shape[1]))
         resized = cv2.resize(grayscale, dim, interpolation = cv2.INTER_AREA)
-        thresh = self._adaptive_threshold(resized)
+        thresh = TFTTesseractScreenCapture._adaptive_threshold(resized)
 
-        return [(match[0], match[1]) for template_file in ICON_FILES
-                for match in self._find_image_matches(thresh, template_file)]
+        return [(match[0], match[1]) for template_file in self.item_icon_files
+                for match in TFTTesseractScreenCapture._find_image_matches(thresh, template_file)]
 
-    def _capture_screenshot(self, box: Tuple[int, int, int, int]=None,
+    @staticmethod
+    def _capture_screenshot(box: Tuple[int, int, int, int]=None,
                             crop: Tuple[int, int, int, int]=None) -> Image:
         return ImageGrab.grab(bbox=box).crop(crop) if crop else ImageGrab.grab(bbox=box)
 
-    def _scale_screenshot(self, screenshot: Image, factor):
+    @staticmethod
+    def _scale_screenshot(screenshot: Image, factor: float):
         (width, height) = (screenshot.width * factor, screenshot.height * factor)
         return screenshot.resize((width, height))
 
@@ -69,14 +71,16 @@ class TFTTesseractScreenCapture:
         return pytesseract.image_to_string(
             edge_filtered_image, config=tess_params).strip()
 
-    def _adaptive_threshold(self, image):
+    @staticmethod
+    def _adaptive_threshold(image: np.ndarray):
         return cv2.adaptiveThreshold(
-            image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+            image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
             cv2.THRESH_BINARY_INV, 61, 11)
 
-    def _find_image_matches(self, image, template_filepath: str, threshold=0.5) -> list:
+    @staticmethod
+    def _find_image_matches(image, template_filepath: str, threshold=0.5) -> list:
         template: np.ndarray = cv2.imread(template_filepath, 0)
-        template = self._adaptive_threshold(template)
+        template = TFTTesseractScreenCapture._adaptive_threshold(template)
         res = cv2.matchTemplate(image,template,cv2.TM_CCOEFF_NORMED)
         loc = np.where(res >= threshold)
         return list(zip(*loc[::-1]))
