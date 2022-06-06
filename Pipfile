@@ -18,6 +18,6 @@ pylint = "*"
 python_version = "3.9"
 
 [scripts]
-lint = "pylint teamfightchaticts"
-test = "pytest"
+lint = "python3 -m pylint teamfightchaticts --fail-under=9.0 --extension-pkg-whitelist=cv2"
+test = "python3 -m pytest"
 start = "python3 -m teamfightchaticts"
