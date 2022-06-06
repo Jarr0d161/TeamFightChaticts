@@ -13,7 +13,9 @@ class TFTScreenCapture(Protocol):
     def capture_gold(self) -> int:
         ...
 
-    def capture_item_locations(self, crop: Tuple[int, int, int, int]) -> List[Tuple[int, int]]:
+    def capture_item_locations(
+        self, crop: Tuple[int, int, int, int]
+    ) -> List[Tuple[int, int]]:
         ...
 
 
@@ -31,47 +33,54 @@ class MouseControl(Protocol):
 class TFTRemoteControlPositions:
     # TODO: compute the positions as properties depending on the screen resolution
     def __init__(self, settings: Dict[str, Any]):
-        self.row_1 = settings['row_1']
-        self.row_2 = settings['row_2']
-        self.row_3 = settings['row_3']
-        self.row_4 = settings['row_4']
-        self.row_5 = settings['row_5']
-        self.row_6 = settings['row_6']
-        self.row_7 = settings['row_7']
-        self.row_8 = settings['row_8']
-        self.bench = settings['row_8']
-        self.augment_list = settings['augment_list']
-        self.item_list = settings['item_list']
-        self.shop_list = settings['shop_list']
-        self.com_list = settings['com_list']
-        self.avatar_default = settings['avatar_default']
-        self.avatar_velocity = settings['avatar_velocity']
-        self.levelup_button = settings['levelup_button']
-        self.roll_button = settings['roll_button']
-        self.carousel_aim = settings['carousel_aim']
-        self.lock_button = settings['lock_button']
-        self.item_drop_region = settings['item_drop_region']
-        self.item_offset = settings['item_offset']
-        self.default_click_pos = settings['default_click_pos']
-        self.board_locations= [
-            self.bench, self.row_1, self.row_2, self.row_3, self.row_4,
-            self.row_5, self.row_6, self.row_7, self.row_8
+        self.row_1 = settings["row_1"]
+        self.row_2 = settings["row_2"]
+        self.row_3 = settings["row_3"]
+        self.row_4 = settings["row_4"]
+        self.row_5 = settings["row_5"]
+        self.row_6 = settings["row_6"]
+        self.row_7 = settings["row_7"]
+        self.row_8 = settings["row_8"]
+        self.bench = settings["row_8"]
+        self.augment_list = settings["augment_list"]
+        self.item_list = settings["item_list"]
+        self.shop_list = settings["shop_list"]
+        self.com_list = settings["com_list"]
+        self.avatar_default = settings["avatar_default"]
+        self.avatar_velocity = settings["avatar_velocity"]
+        self.levelup_button = settings["levelup_button"]
+        self.roll_button = settings["roll_button"]
+        self.carousel_aim = settings["carousel_aim"]
+        self.lock_button = settings["lock_button"]
+        self.item_drop_region = settings["item_drop_region"]
+        self.item_offset = settings["item_offset"]
+        self.default_click_pos = settings["default_click_pos"]
+        self.board_locations = [
+            self.bench,
+            self.row_1,
+            self.row_2,
+            self.row_3,
+            self.row_4,
+            self.row_5,
+            self.row_6,
+            self.row_7,
+            self.row_8,
         ]
 
     def by_field(self, field_id: str) -> Tuple[int, int]:
         row = field_id[0]
         col = int(field_id[1])
 
-        if row.startswith('w'):
-            return self.bench[col-1]
-        if row.startswith('l'):
-            return self.row_1[col-1]
-        if row.startswith('b'):
-            return self.row_2[col-1]
-        if row.startswith('g'):
-            return self.row_3[col-1]
-        if row.startswith('r'):
-            return self.row_4[col-1]
+        if row.startswith("w"):
+            return self.bench[col - 1]
+        if row.startswith("l"):
+            return self.row_1[col - 1]
+        if row.startswith("b"):
+            return self.row_2[col - 1]
+        if row.startswith("g"):
+            return self.row_3[col - 1]
+        if row.startswith("r"):
+            return self.row_4[col - 1]
 
 
 @dataclass
@@ -155,7 +164,7 @@ class TFTRemoteControl:
 
         xp_diff_to_level = total_xp - act_xp
         levelup_clicks = math.ceil(xp_diff_to_level / 4)
-        levelup_clicks -= 1 if tft_cmd.cmd == 'lvl' and xp_diff_to_level % 4 <= 2 else 0
+        levelup_clicks -= 1 if tft_cmd.cmd == "lvl" and xp_diff_to_level % 4 <= 2 else 0
 
         while levelup_clicks > 0 and levelup_clicks * 4 <= gold:
             self.mouse.click_at(self.positions.levelup_button)
@@ -181,12 +190,16 @@ class TFTRemoteControl:
     def handle_collect_row_cmd(self, tft_cmd: TFTCommand):
         self.mouse.click_at(self.positions.default_click_pos)
         row = tft_cmd.row_to_collect
-        start_pos = ((self.positions.board_locations[row])[0][0] - 100,
-                     (self.positions.board_locations[row])[0][1])
+        start_pos = (
+            (self.positions.board_locations[row])[0][0] - 100,
+            (self.positions.board_locations[row])[0][1],
+        )
         self.mouse.right_click_at(start_pos)
         time.sleep(2)
-        end_pos = ((self.positions.board_locations[row])[6][0] + 100,
-                   (self.positions.board_locations[row])[6][1])
+        end_pos = (
+            (self.positions.board_locations[row])[6][0] + 100,
+            (self.positions.board_locations[row])[6][1],
+        )
         self.mouse.right_click_at(end_pos)
 
     def handle_attach_item_cmd(self, tft_cmd: TFTCommand):

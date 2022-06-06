@@ -44,7 +44,8 @@ twitch_connection
 **4) Install Pip Dependencies**
 
 ```sh
-python3 -m pip install -r requirements.txt
+python3 -m pip install pipenv
+pipenv install
 ```
 
 **5) Run the App**
@@ -52,6 +53,11 @@ python3 -m pip install -r requirements.txt
 ```sh
 python3 -m teamfightchaticts
 ```
+or 
+```sh
+pipenv run start
+```
+
 
 ## Supported Chat Commands
 Following table shows all commands supported:
@@ -69,6 +75,19 @@ Following table shows all commands supported:
 | (itemslot)(field) | Run (upwards) in item carousel | bw3               |
 | lock / unlock     | Lock / unlock store            |                   |
 
+
+## Development setup
+
+- Install pipenv 
+  - Unix `python3 -m pip install pipenv`
+  - Windows `python -m pip install pipenv`
+- Install dependencies `pipenv install`
+
+### Pipenv scripts
+- `pipenv run test` will resolve and run unittests
+  - In order to resolve your test file please prefix the filename with _test_
+- `pipenv run format` will format the code in the [teamfightchatics](./teamfightchatics) folder using black
+- `pipenv run start` will run the teamfightchaticts module
 
 ## License
 This project is available under the Apache 2.0 License's terms.

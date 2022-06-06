@@ -1,0 +1,40 @@
+name: cicd pipeline
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  check-format: 
+    name: Check format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+          architecture: 'x64'
+      - name: check-format
+        run: |
+          pipenv install
+          pipenv run format:check
+  unittest:
+    name: Unittest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+          architecture: 'x64'
+      - name: run unittests
+        run: |
+          pipenv install
+          pipenv run test
+
+
+
+      
+   

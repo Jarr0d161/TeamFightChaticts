@@ -9,10 +9,12 @@ from teamfightchaticts.tft_command import TFTCommand
 @dataclass
 class TwitchConnection:
     settings: TwitchSettings
-    irc: socket.socket=field(init=False, default=None)
-    msg_listeners: List[Callable[[str], None]]=field(init=False, default_factory=lambda: list())
-    encoding: str='utf-8'
-    buffer_size: int=1024
+    irc: socket.socket = field(init=False, default=None)
+    msg_listeners: List[Callable[[str], None]] = field(
+        init=False, default_factory=lambda: list()
+    )
+    encoding: str = "utf-8"
+    buffer_size: int = 1024
 
     def register_message_listener(self, listener: Callable[[str], None]):
         self.msg_listeners.append(listener)
@@ -24,24 +26,26 @@ class TwitchConnection:
         irc.connect((self.settings.server, self.settings.port))
 
         auth_msg = (
-            f'PASS {self.settings.password}\n'
-            f'NICK {self.settings.chatbot_name}\n'
-            f'JOIN #{self.settings.channel}\n'
+            f"PASS {self.settings.password}\n"
+            f"NICK {self.settings.chatbot_name}\n"
+            f"JOIN #{self.settings.channel}\n"
         )
         irc.send(auth_msg.encode(self.encoding))
 
-        line = ''
+        line = ""
         while SUCCESS_TEXT not in line:
             buffer = irc.recv(self.buffer_size).decode(self.encoding)
             line = buffer.split("\n")[-1]
 
         self.irc = irc
 
-    def receive_messages_as_daemon(self, is_term_requested: Callable[[], bool]=lambda: False):
+    def receive_messages_as_daemon(
+        self, is_term_requested: Callable[[], bool] = lambda: False
+    ):
         self.irc.send("CAP REQ :twitch.tv/tags\r\n".encode(self.encoding))
 
         is_ping_msg = lambda msg: "PING :tmi.twitch.tv" in msg
-        remainder = ''
+        remainder = ""
         while True:
             try:
                 # TODO: make sure this doesn't crash when processing all kinds of emoticons
@@ -75,7 +79,7 @@ class TwitchConnection:
         try:
             colons = line.count(":")
             line_parts = line.split(":", colons)
-            user = line_parts[colons-1].split("!", 1)[0]
+            user = line_parts[colons - 1].split("!", 1)[0]
             message = line_parts[2] if len(line_parts) >= 3 else ""
             return message
         except:

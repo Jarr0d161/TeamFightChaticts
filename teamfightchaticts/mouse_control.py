@@ -1,6 +1,7 @@
 from typing import Tuple
 
 import pyautogui
+
 pyautogui.FAILSAFE = False
 
 

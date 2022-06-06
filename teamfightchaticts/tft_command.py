@@ -5,37 +5,40 @@ from dataclasses import dataclass, field
 
 
 class TFTCmdType(IntEnum):
-    INVALID=0
-    SHOP=1
-    PICK_AUGMENT=2
-    LOCK_OR_UNLOCK=3
-    PICK_ITEM_CAROUSEL=4
-    COLLECT_ALL_ITEMS_DROPPED=5
-    LEVELUP=6
-    ROLL_SHOP=7
-    SELL_UNIT=8
-    PLACE_UNIT=9
-    COLLECT_ITEMS_OF_ROW=10
-    ATTACH_ITEM=11
+    INVALID = 0
+    SHOP = 1
+    PICK_AUGMENT = 2
+    LOCK_OR_UNLOCK = 3
+    PICK_ITEM_CAROUSEL = 4
+    COLLECT_ALL_ITEMS_DROPPED = 5
+    LEVELUP = 6
+    ROLL_SHOP = 7
+    SELL_UNIT = 8
+    PLACE_UNIT = 9
+    COLLECT_ITEMS_OF_ROW = 10
+    ATTACH_ITEM = 11
 
 
 @dataclass(eq=True)
 class TFTCommand:
     cmd: str
-    cmd_patterns: Dict[TFTCmdType, str]=field(hash=False, compare=False,
+    cmd_patterns: Dict[TFTCmdType, str] = field(
+        hash=False,
+        compare=False,
         default_factory=lambda: {
-            TFTCmdType.SHOP: '^shop[1-5]$',
-            TFTCmdType.PICK_AUGMENT: '^aug[1-3]$',
-            TFTCmdType.LOCK_OR_UNLOCK: '^(lock|unlock)$',
-            TFTCmdType.PICK_ITEM_CAROUSEL: '^now$',
-            TFTCmdType.COLLECT_ALL_ITEMS_DROPPED: '^collect$',
-            TFTCmdType.LEVELUP: '^(lvl|lvlup)$',
-            TFTCmdType.ROLL_SHOP: '^(roll|reroll)$',
-            TFTCmdType.SELL_UNIT: '^sellw[0-9]$',
-            TFTCmdType.PLACE_UNIT: '^(w[0-9]|[lbgr][1-7]){2}$',
-            TFTCmdType.COLLECT_ITEMS_OF_ROW: '^row[1-8]$',
-            TFTCmdType.ATTACH_ITEM: '^[a-j]w[0-9]$',
-        })
+            TFTCmdType.SHOP: "^shop[1-5]$",
+            TFTCmdType.PICK_AUGMENT: "^aug[1-3]$",
+            TFTCmdType.LOCK_OR_UNLOCK: "^(lock|unlock)$",
+            TFTCmdType.PICK_ITEM_CAROUSEL: "^now$",
+            TFTCmdType.COLLECT_ALL_ITEMS_DROPPED: "^collect$",
+            TFTCmdType.LEVELUP: "^(lvl|lvlup)$",
+            TFTCmdType.ROLL_SHOP: "^(roll|reroll)$",
+            TFTCmdType.SELL_UNIT: "^sellw[0-9]$",
+            TFTCmdType.PLACE_UNIT: "^(w[0-9]|[lbgr][1-7]){2}$",
+            TFTCmdType.COLLECT_ITEMS_OF_ROW: "^row[1-8]$",
+            TFTCmdType.ATTACH_ITEM: "^[a-j]w[0-9]$",
+        },
+    )
 
     @property
     def type(self) -> TFTCmdType:
