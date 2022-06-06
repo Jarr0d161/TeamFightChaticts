@@ -19,6 +19,6 @@ python_version = "3.9"
 
 [scripts]
 format = "black teamfightchaticts"
-format:check = "black --check teamfightchaticts"
+format-check = "black --check teamfightchaticts"
 test = "pytest"
 start = "python3 -m teamfightchaticts"

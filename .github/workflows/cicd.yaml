@@ -15,12 +15,11 @@ jobs:
       - uses: actions/setup-python@v3
         with:
           python-version: '3.9'
-          architecture: 'x64'
       - name: check-format
         run: |
           python3 -m pip install pipenv
           pipenv install
-          pipenv run format:check
+          pipenv run format-check
   unittest:
     name: Unittest
     runs-on: ubuntu-latest
@@ -29,7 +28,6 @@ jobs:
       - uses: actions/setup-python@v3
         with:
           python-version: '3.9'
-          architecture: 'x64'
       - name: run unittests
         run: |
           python3 -m pip install pipenv
