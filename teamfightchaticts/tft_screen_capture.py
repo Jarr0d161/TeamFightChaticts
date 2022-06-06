@@ -43,7 +43,7 @@ class TFTTesseractScreenCapture:
 
     def capture_item_locations(self, crop: Tuple[int, int, int, int]) -> List[Tuple[int, int]]:
         screenshot = self._capture_screenshot(crop=crop)
-        grayscale = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
+        grayscale: np.ndarray = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
         dim = (int(grayscale.shape[0]), int(grayscale.shape[1]))
         resized = cv2.resize(grayscale, dim, interpolation = cv2.INTER_AREA)
         thresh = TFTTesseractScreenCapture._adaptive_threshold(resized)
@@ -53,11 +53,11 @@ class TFTTesseractScreenCapture:
 
     @staticmethod
     def _capture_screenshot(box: Tuple[int, int, int, int]=None,
-                            crop: Tuple[int, int, int, int]=None) -> Image:
+                            crop: Tuple[int, int, int, int]=None) -> Image.Image:
         return ImageGrab.grab(bbox=box).crop(crop) if crop else ImageGrab.grab(bbox=box)
 
     @staticmethod
-    def _scale_screenshot(screenshot: Image, factor: float):
+    def _scale_screenshot(screenshot: Image.Image, factor: float):
         (width, height) = (screenshot.width * factor, screenshot.height * factor)
         return screenshot.resize((width, height))
 

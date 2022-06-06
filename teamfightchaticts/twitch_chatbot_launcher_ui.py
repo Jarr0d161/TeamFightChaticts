@@ -1,22 +1,30 @@
-from typing import Callable, Dict, Any
+from typing import Dict, Any, Protocol
 
 import tkinter as tk
 import tkinter.font as tkFont
 
 
+class TwitchChatbot(Protocol):
+    def start_bot(self, pool_size: int):
+        ...
+
+    def stop_bot(self):
+        ...
+
+
 class TwitchChatbotLauncherUI(tk.Frame):
+    # pylint: disable=too-many-ancestors, too-many-instance-attributes
+    # pylint: disable=keyword-arg-before-vararg, too-many-arguments
     # TODO: get rid of inheritance if possible!!!
-    def __init__(self, start_chatbot: Callable[[int], None],
-                 stop_chatbot: Callable[[], None],
-                 ui_settings: Dict[str, Any], parent: tk.Tk=tk.Tk(),
-                 width=518, height=180, *args, **kwargs):
+    def __init__(self, chatbot: TwitchChatbot, ui_settings: Dict[str, Any],
+                 parent: tk.Tk=tk.Tk(), width=518, height=180, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
 
-        self.fn_start_chatbot = start_chatbot
-        self.fn_stop_chatbot = stop_chatbot
-
+        self.chatbot = chatbot
         self.ui_settings = ui_settings
-        self.parent = self.init_parent(parent, self.ui_settings['ui_title'], width, height)
+
+        self.parent = TwitchChatbotLauncherUI.init_parent(
+            parent, self.ui_settings['ui_title'], width, height)
         self.poolsize_input = self.load_poolsize_input()
         self.load_launch_usage_label()
         self.load_auth_usage_label()
@@ -24,9 +32,11 @@ class TwitchChatbotLauncherUI(tk.Frame):
         self.start_stop_button = self.load_start_stop_button()
         self.load_exit_button()
 
+        self.pool = 10
         self.is_running = False
 
-    def init_parent(self, parent: tk.Tk, title: str, width, height) -> tk.Tk:
+    @staticmethod
+    def init_parent(parent: tk.Tk, title: str, width, height) -> tk.Tk:
         parent.title(title)
         screen_width = parent.winfo_screenwidth()
         screen_height = parent.winfo_screenheight()
@@ -42,7 +52,7 @@ class TwitchChatbotLauncherUI(tk.Frame):
         poolsize_input["font"] = tkFont.Font(family='Times',size=12)
         poolsize_input["fg"] = "#333333"
         poolsize_input["justify"] = "center"
-        poolsize_input.insert(0, "10")
+        poolsize_input.insert(0, str(self.pool))
         poolsize_input.place(x=220, y=110, width=82, height=30)
         return poolsize_input
 
@@ -100,15 +110,15 @@ class TwitchChatbotLauncherUI(tk.Frame):
             self.start_button_pressed()
 
     def start_button_pressed(self):
-        self.fn_start_chatbot(self.pool)
+        self.chatbot.start_bot(self.pool)
         self.is_running = True
         self.start_stop_button.config(text=self.ui_settings['stop_button_text'])
 
     def stop_button_pressed(self):
-        self.fn_stop_chatbot()
+        self.chatbot.stop_bot()
         self.is_running  = False
         self.start_stop_button.config(text=self.ui_settings['start_button_text'])
 
     def exit_button(self):
-        self.fn_stop_chatbot()
+        self.chatbot.stop_bot()
         self.parent.destroy()

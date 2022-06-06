@@ -11,7 +11,7 @@ from teamfightchaticts.tft_remote_control import TFTRemoteControl
 @dataclass
 class TwitchTFTChatbotState:
     last_cmd: TFTCommand=TFTCommand('')
-    cmd_counts: Dict[TFTCommand, int]=field(default_factory=lambda: dict())
+    cmd_counts: Dict[TFTCommand, int]=field(default_factory=lambda: {})
     pool: int=10
 
     def update_state(self, tft_cmd: TFTCommand):
@@ -19,7 +19,7 @@ class TwitchTFTChatbotState:
 
     def reset_counts(self):
         self.last_cmd = self.cmd_to_execute
-        self.cmd_counts = dict()
+        self.cmd_counts = {}
 
     @property
     def cmd_to_execute(self) -> TFTCommand:

@@ -8,9 +8,10 @@ from teamfightchaticts.tft_command import TFTCommand
 
 @dataclass
 class TwitchConnection:
+    # pylint: disable=bare-except, broad-except
     settings: TwitchSettings
     irc: socket.socket=field(init=False, default=None)
-    msg_listeners: List[Callable[[str], None]]=field(init=False, default_factory=lambda: list())
+    msg_listeners: List[Callable[[str], None]]=field(init=False, default_factory=lambda: [])
     encoding: str='utf-8'
     buffer_size: int=1024
 
@@ -18,8 +19,6 @@ class TwitchConnection:
         self.msg_listeners.append(listener)
 
     def connect_to_server(self):
-        SUCCESS_TEXT = "End of /NAMES list"
-
         irc = socket.socket()
         irc.connect((self.settings.server, self.settings.port))
 
@@ -31,7 +30,8 @@ class TwitchConnection:
         irc.send(auth_msg.encode(self.encoding))
 
         line = ''
-        while SUCCESS_TEXT not in line:
+        success_text = "End of /NAMES list"
+        while success_text not in line:
             buffer = irc.recv(self.buffer_size).decode(self.encoding)
             line = buffer.split("\n")[-1]
 
@@ -53,11 +53,11 @@ class TwitchConnection:
             remainder = lines[-1]
 
             # handle ping-pong messages to keep the connection alive
-            if any(map(lambda line: is_ping_msg(line), lines)):
+            if any(map(is_ping_msg, lines)):
                 self._send_twitch_pong()
             lines = [line for line in lines if not is_ping_msg(line)]
 
-            messages = [self._parse_message_from_line(line) for line in lines]
+            messages = [TwitchConnection._parse_message_from_line(line) for line in lines]
             commands = [TFTCommand(cmd.lower()) for cmd in messages]
 
             for cmd in commands:
@@ -71,15 +71,10 @@ class TwitchConnection:
         msg = "PONG :tmi.twitch.tv\r\n".encode(self.encoding)
         self.irc.send(msg)
 
-    def _parse_message_from_line(self, line: str) -> str:
-        try:
-            colons = line.count(":")
-            line_parts = line.split(":", colons)
-            user = line_parts[colons-1].split("!", 1)[0]
-            message = line_parts[2] if len(line_parts) >= 3 else ""
-            return message
-        except:
-            return ""
+    @staticmethod
+    def _parse_message_from_line(line: str) -> str:
+        line_parts = line.split(":")
+        return line_parts[2] if len(line_parts) >= 3 else ""
 
     def _notify_listeners(self, tft_cmd: TFTCommand):
         for listener in self.msg_listeners:
