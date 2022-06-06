@@ -21,11 +21,11 @@ jobs:
           path: ~/.local/share/virtualenvs
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - name: Install dependencies
-        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        # if: steps.cache-pipenv.outputs.cache-hit != 'true'
         run: |
           python3 -m pip install pipenv
           pipenv install --dev
-      - name: check-format
+      - name: lint sourcecode
         run: |
           pipenv run lint
       - name: run unittests

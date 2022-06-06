@@ -86,7 +86,7 @@ Following table shows all commands supported:
 ### Pipenv scripts
 - `pipenv run test` will resolve and run unittests
   - In order to resolve your test file please prefix the filename with _test_
-- `pipenv run format` will format the code in the [teamfightchatics](./teamfightchatics) folder using black
+- `pipenv run lint` will lint the code in the [teamfightchatics](./teamfightchatics) folder using pylint
 - `pipenv run start` will run the teamfightchaticts module
 
 ## License
