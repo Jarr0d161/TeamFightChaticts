@@ -40,7 +40,7 @@ class TFTTesseractScreenCapture:
         return int(ocr_text) if ocr_text.isdecimal() else None
 
     def capture_item_locations(self, crop: Tuple[int, int, int, int]) -> List[Tuple[int, int]]:
-        ICON_FILES = ['../images/white.png', '../images/blue.png']
+        ICON_FILES = ['./images/white.png', './images/blue.png']
 
         screenshot = self._capture_screenshot(crop=crop)
         grayscale = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
