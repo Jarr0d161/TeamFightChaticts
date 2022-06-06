@@ -58,7 +58,6 @@ or
 pipenv run start
 ```
 
-
 ## Supported Chat Commands
 Following table shows all commands supported:
 
@@ -79,20 +78,21 @@ Following table shows all commands supported:
 This is a community project, so please let us know if you've got a great idea!
 
 As always, be polite and show appreciation for each other during the dev process.
-This is supposed to be a fun project!
+It's supposed to be a fun project!
 
 ## Development
-This section outlines how to set up the development process.
+This section outlines the development process.
 
 ### Project Structure
--  [source code](./teamfightchaticts): contains all Python modules
-   (entrypoint is in [\_\_main\_\_.py](./teamfightchaticts/__main__.py) by convention)
--  [config](./config): contains all configurations, split up in app_settings.json and translations_[lang].json
--  [resources](./images): contains all app resources
+- [source code](./teamfightchaticts): contains all Python modules
+  (entrypoint is in [\_\_main\_\_.py](./teamfightchaticts/__main__.py) by convention)
+- [unit tests](./tests): contains all unit tests (evaluated with pytest)
+- [config](./config): contains all configurations, split up in app_settings.json and translations_[lang].json
+- [resources](./images): contains all app resources
 
 ### Build / Test / Lint
 - `pipenv run test` will run all registered unit tests (with pytest)
-- `pipenv run lint` will lint the code (with pylint)
+- `pipenv run lint` will lint the source code (with pylint)
 - `pipenv run start` will run the teamfightchaticts module
 
 ## License
