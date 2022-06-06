@@ -22,6 +22,8 @@ class TwitchChatbotLauncherUI(tk.Frame):
 
         self.chatbot = chatbot
         self.ui_settings = ui_settings
+        self.pool = 10
+        self.is_running = False
 
         self.parent = TwitchChatbotLauncherUI.init_parent(
             parent, self.ui_settings['ui_title'], width, height)
@@ -31,9 +33,6 @@ class TwitchChatbotLauncherUI(tk.Frame):
         self.load_poolsize_label()
         self.start_stop_button = self.load_start_stop_button()
         self.load_exit_button()
-
-        self.pool = 10
-        self.is_running = False
 
     @staticmethod
     def init_parent(parent: tk.Tk, title: str, width, height) -> tk.Tk:
