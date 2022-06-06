@@ -7,34 +7,27 @@ on:
       - "main"
 
 jobs:
-  check-format: 
-    name: Check format
+  validation: 
+    name: Validation job
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
         with:
           python-version: '3.9'
+      - id: cache-pipenv
+        uses: actions/cache@v1
+        with:
+          path: ~/.local/share/virtualenvs
+          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+      - name: Install dependencies
+        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        run: |
+          python3 -m pip install pipenv
+          pipenv install
       - name: check-format
         run: |
-          python3 -m pip install pipenv
-          pipenv install
           pipenv run format-check
-  unittest:
-    name: Unittest
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-        with:
-          python-version: '3.9'
       - name: run unittests
         run: |
-          python3 -m pip install pipenv
-          pipenv install
           pipenv run test
-
-
-
-      
-   
