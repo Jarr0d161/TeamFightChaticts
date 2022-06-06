@@ -26,10 +26,9 @@ jobs:
         run: |
           python3 -m pip install pipenv
           pipenv install --dev
-      # TODO: enable linting if codebase is clean
-      # - name: lint sourcecode
-      #   run: |
-      #     pipenv run lint
-      - name: run unittests
+      - name: run linter (pylint)
+        run: |
+          pipenv run lint
+      - name: run unit tests (pytest)
         run: |
           pipenv run test
