@@ -24,7 +24,7 @@ jobs:
         if: steps.cache-pipenv.outputs.cache-hit != 'true'
         run: |
           python3 -m pip install pipenv
-          pipenv install
+          pipenv install --dev
       - name: check-format
         run: |
           pipenv run format-check
