@@ -37,15 +37,15 @@ class TFTCommand:
             TFTCmdType.COLLECT_ITEMS_OF_ROW: '^row[1-8]$',
             TFTCmdType.ATTACH_ITEM: '^[a-j]w[0-9]$',
         })
-    cmd_type: TFTCmdType=field(init=False, default=None)
-    selected_shop_unit: int=field(init=False, default=None)
-    selected_augment: int=field(init=False, default=None)
-    unit_to_sell: str=field(init=False, default=None)
-    unit_to_place: str=field(init=False, default=None)
-    unit_place_aim: str=field(init=False, default=None)
-    row_to_collect: str=field(init=False, default=None)
-    item_to_atttach: str=field(init=False, default=None)
-    unit_to_attach_to: str=field(init=False, default=None)
+    cmd_type: TFTCmdType=field(init=False, hash=False, compare=False, default=None)
+    selected_shop_unit: int=field(init=False, hash=False, compare=False, default=None)
+    selected_augment: int=field(init=False, hash=False, compare=False, default=None)
+    unit_to_sell: str=field(init=False, hash=False, compare=False, default=None)
+    unit_to_place: str=field(init=False, hash=False, compare=False, default=None)
+    unit_place_aim: str=field(init=False, hash=False, compare=False, default=None)
+    row_to_collect: str=field(init=False, hash=False, compare=False, default=None)
+    item_to_atttach: str=field(init=False, hash=False, compare=False, default=None)
+    unit_to_attach_to: str=field(init=False, hash=False, compare=False, default=None)
 
     def __post_init__(self):
         # determine command type
