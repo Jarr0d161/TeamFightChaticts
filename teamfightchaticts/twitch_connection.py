@@ -1,9 +1,13 @@
 import socket
-from typing import List, Callable
+from typing import List, Callable, Protocol
 from dataclasses import dataclass, field
 
 from teamfightchaticts.settings import TwitchSettings
-from teamfightchaticts.tft_command import TFTCommand
+
+
+@dataclass
+class TFTCommand(Protocol):
+    cmd: str
 
 
 @dataclass
