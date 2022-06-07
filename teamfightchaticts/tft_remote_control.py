@@ -8,24 +8,24 @@ from .tft_command import TFTCommand, TFTCmdType
 
 class TFTScreenCapture(Protocol):
     def capture_level(self) -> Tuple[int, int]:
-        ...
+        raise NotImplementedError()
 
     def capture_gold(self) -> int:
-        ...
+        raise NotImplementedError()
 
     def capture_item_locations(self, crop: Tuple[int, int, int, int]) -> List[Tuple[int, int]]:
-        ...
+        raise NotImplementedError()
 
 
 class MouseControl(Protocol):
     def click_at(self, loc: Tuple[int, int]):
-        ...
+        raise NotImplementedError()
 
     def right_click_at(self, loc: Tuple[int, int]):
-        ...
+        raise NotImplementedError()
 
     def drag(self, from_loc: Tuple[int, int], to_loc: Tuple[int, int]):
-        ...
+        raise NotImplementedError()
 
 
 class TFTRemoteControlPositions:

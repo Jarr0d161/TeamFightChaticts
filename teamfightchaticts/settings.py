@@ -13,7 +13,7 @@ class TwitchSettings:
 
 
 def app_settings(config_file: str='./config/app_settings.json') -> Dict[str, Any]:
-    with open(config_file, 'r') as file:
+    with open(config_file, 'r', encoding='utf-8') as file:
         return json.load(file)
 
 
@@ -25,7 +25,7 @@ def ui_settings_of_selected_language(
         translations_file: str='./config/translations_%LANG%.json') -> Dict[str, str]:
     lang = app_settings()['language']
     translations_file = translations_file.replace('%LANG%', lang)
-    with open(translations_file, 'r') as file:
+    with open(translations_file, 'r', encoding='utf-8') as file:
         return json.load(file)
 
 

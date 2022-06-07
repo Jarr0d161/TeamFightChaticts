@@ -6,10 +6,10 @@ import tkinter.font as tkFont
 
 class TwitchChatbot(Protocol):
     def start_bot(self, pool_size: int):
-        ...
+        raise NotImplementedError()
 
     def stop_bot(self):
-        ...
+        raise NotImplementedError()
 
 
 class TwitchChatbotLauncherUI(tk.Frame):

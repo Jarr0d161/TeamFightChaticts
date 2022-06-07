@@ -21,6 +21,7 @@ class TFTCmdType(IntEnum):
 
 @dataclass(eq=True)
 class TFTCommand:
+    # pylint: disable=too-many-instance-attributes
     cmd: str
     cmd_patterns: Dict[TFTCmdType, str]=field(hash=False, compare=False, repr=False,
         default_factory=lambda: {
