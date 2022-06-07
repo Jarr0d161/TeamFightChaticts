@@ -80,6 +80,52 @@ def test_roll_shop_cmd():
 
 
 # TFTCmdType.SELL_UNIT: '^sellw[0-9]$',
+def test_sell_bench_unit_cmd():
+    assert TFTCommand('sellw0').cmd_type == TFTCmdType.SELL_UNIT \
+        and TFTCommand('sellw0').unit_to_sell == 'w0'
+    assert TFTCommand('sellw1').cmd_type == TFTCmdType.SELL_UNIT \
+        and TFTCommand('sellw1').unit_to_sell == 'w1'
+    assert TFTCommand('sellw2').cmd_type == TFTCmdType.SELL_UNIT \
+        and TFTCommand('sellw2').unit_to_sell == 'w2'
+    assert TFTCommand('sellw3').cmd_type == TFTCmdType.SELL_UNIT \
+        and TFTCommand('sellw3').unit_to_sell == 'w3'
+    assert TFTCommand('sellw4').cmd_type == TFTCmdType.SELL_UNIT \
+        and TFTCommand('sellw4').unit_to_sell == 'w4'
+    assert TFTCommand('sellw5').cmd_type == TFTCmdType.SELL_UNIT \
+        and TFTCommand('sellw5').unit_to_sell == 'w5'
+    assert TFTCommand('sellw6').cmd_type == TFTCmdType.SELL_UNIT \
+        and TFTCommand('sellw6').unit_to_sell == 'w6'
+    assert TFTCommand('sellw7').cmd_type == TFTCmdType.SELL_UNIT \
+        and TFTCommand('sellw7').unit_to_sell == 'w7'
+    assert TFTCommand('sellw8').cmd_type == TFTCmdType.SELL_UNIT \
+        and TFTCommand('sellw8').unit_to_sell == 'w8'
+    assert TFTCommand('sellw9').cmd_type == TFTCmdType.SELL_UNIT \
+        and TFTCommand('sellw9').unit_to_sell == 'w9'
+    assert TFTCommand(' sellw0').cmd_type == TFTCmdType.INVALID
+    assert TFTCommand('sellw0 ').cmd_type == TFTCmdType.INVALID
+    assert TFTCommand('sellw').cmd_type == TFTCmdType.INVALID
+    assert TFTCommand('sellwx').cmd_type == TFTCmdType.INVALID
+
+
 # TFTCmdType.PLACE_UNIT: '^(w[0-9]|[lbgr][1-7]){2}$',
+def test_place_unit_cmd():
+    valid_cmd = lambda cmd, unit, aim: cmd.cmd_type == TFTCmdType.PLACE_UNIT \
+        and cmd.unit_to_place == unit and cmd.unit_place_aim == aim
+
+    bench = [f'w{i}' for i in range(10)]
+    board = [f'{row}{i}' for row in ['l', 'b', 'g', 'r'] for i in range(1, 8)]
+    all_fields = bench + board
+    valid_perms = [(f1, f2) for f1 in all_fields for f2 in all_fields if f1 != f2]
+    invalid_perms = [(f1, f1) for f1 in all_fields]
+
+    assert all(map(lambda perm: valid_cmd(
+        TFTCommand(f'{perm[0]}{perm[1]}'), perm[0], perm[1]), valid_perms))
+    assert all(map(lambda perm: not valid_cmd(
+        TFTCommand(f'{perm[0]}{perm[1]}'), perm[0], perm[1]), invalid_perms))
+
+    assert TFTCommand(' w0w1').cmd_type == TFTCmdType.INVALID
+    assert TFTCommand('w0w1 ').cmd_type == TFTCmdType.INVALID
+
+
 # TFTCmdType.COLLECT_ITEMS_OF_ROW: '^row[1-8]$',
 # TFTCmdType.ATTACH_ITEM: '^[a-j]w[0-9]$',
