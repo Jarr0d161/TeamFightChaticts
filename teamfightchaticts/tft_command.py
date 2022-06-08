@@ -23,7 +23,8 @@ class TFTCmdType(IntEnum):
 class TFTCommand:
     # pylint: disable=too-many-instance-attributes
     cmd: str
-    cmd_patterns: Dict[TFTCmdType, str]=field(hash=False, compare=False, repr=False,
+    cmd_patterns: Dict[TFTCmdType, str]=field(
+        init=False, hash=False, compare=False, repr=False,
         default_factory=lambda: {
             TFTCmdType.SHOP: '^shop[1-5]$',
             TFTCmdType.PICK_AUGMENT: '^aug[1-3]$',
@@ -35,7 +36,7 @@ class TFTCommand:
             TFTCmdType.SELL_UNIT: '^sellw[0-9]$',
             TFTCmdType.PLACE_UNIT: '^(w[0-9]|[lbgr][1-7]){2}$',
             TFTCmdType.COLLECT_ITEMS_OF_ROW: '^row[1-8]$',
-            TFTCmdType.ATTACH_ITEM: '^[a-j]w[0-9]$',
+            TFTCmdType.ATTACH_ITEM: '^[a-j](w[0-9]|[lbgr][1-7])$',
         })
     cmd_type: TFTCmdType=field(init=False, hash=False, compare=False, default=None)
     selected_shop_unit: int=field(init=False, hash=False, compare=False, default=None)
@@ -64,10 +65,13 @@ class TFTCommand:
         if self.cmd_type == TFTCmdType.SELL_UNIT:
             self.unit_to_sell = self.cmd[4:6]
         if self.cmd_type == TFTCmdType.PLACE_UNIT:
-            self.unit_to_place = self.cmd[0:2]
-            self.unit_place_aim = self.cmd[2:4]
-            if self.unit_to_place == self.unit_place_aim:
+            unit_to_place = self.cmd[0:2]
+            unit_place_aim = self.cmd[2:4]
+            if unit_to_place == unit_place_aim:
                 self.cmd_type = TFTCmdType.INVALID
+            else:
+                self.unit_to_place = unit_to_place
+                self.unit_place_aim = unit_place_aim
         if self.cmd_type == TFTCmdType.COLLECT_ITEMS_OF_ROW:
             self.row_to_collect = int(self.cmd[3:])
         if self.cmd_type == TFTCmdType.ATTACH_ITEM:

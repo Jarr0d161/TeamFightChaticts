@@ -3,36 +3,34 @@ from teamfightchaticts.tft_command import TFTCommand, TFTCmdType
 
 # TFTCmdType.SHOP: '^shop[1-5]$',
 def test_shop_unit_cmd():
-    assert TFTCommand('shop1').cmd_type == TFTCmdType.SHOP \
-        and TFTCommand('shop1').selected_shop_unit == 0
-    assert TFTCommand('shop2').cmd_type == TFTCmdType.SHOP \
-        and TFTCommand('shop2').selected_shop_unit == 1
-    assert TFTCommand('shop3').cmd_type == TFTCmdType.SHOP \
-        and TFTCommand('shop3').selected_shop_unit == 2
-    assert TFTCommand('shop4').cmd_type == TFTCmdType.SHOP \
-        and TFTCommand('shop4').selected_shop_unit == 3
-    assert TFTCommand('shop5').cmd_type == TFTCmdType.SHOP \
-        and TFTCommand('shop5').selected_shop_unit == 4
-    assert TFTCommand('shop0').cmd_type == TFTCmdType.INVALID
-    assert TFTCommand('shop6').cmd_type == TFTCmdType.INVALID
-    assert TFTCommand('shop10').cmd_type == TFTCmdType.INVALID
-    assert TFTCommand(' shop1').cmd_type == TFTCmdType.INVALID
-    assert TFTCommand('shop1 ').cmd_type == TFTCmdType.INVALID
+    match_cmd = lambda cmd, cmd_type, unit: \
+        cmd.cmd_type == cmd_type \
+            and cmd.selected_shop_unit == unit
+    assert match_cmd(TFTCommand('shop1'), TFTCmdType.SHOP, 0)
+    assert match_cmd(TFTCommand('shop2'), TFTCmdType.SHOP, 1)
+    assert match_cmd(TFTCommand('shop3'), TFTCmdType.SHOP, 2)
+    assert match_cmd(TFTCommand('shop4'), TFTCmdType.SHOP, 3)
+    assert match_cmd(TFTCommand('shop5'), TFTCmdType.SHOP, 4)
+    assert match_cmd(TFTCommand('shop0'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand('shop6'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand('shop10'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand(' shop1'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand('shop1 '), TFTCmdType.INVALID, None)
 
 
 # TFTCmdType.PICK_AUGMENT: '^aug[1-3]$',
 def test_pick_augment_cmd():
-    assert TFTCommand('aug1').cmd_type == TFTCmdType.PICK_AUGMENT \
-        and TFTCommand('aug1').selected_augment == 0
-    assert TFTCommand('aug2').cmd_type == TFTCmdType.PICK_AUGMENT \
-        and TFTCommand('aug2').selected_augment == 1
-    assert TFTCommand('aug3').cmd_type == TFTCmdType.PICK_AUGMENT \
-        and TFTCommand('aug3').selected_augment == 2
-    assert TFTCommand('aug0').cmd_type == TFTCmdType.INVALID
-    assert TFTCommand('aug4').cmd_type == TFTCmdType.INVALID
-    assert TFTCommand('aug10').cmd_type == TFTCmdType.INVALID
-    assert TFTCommand(' aug1').cmd_type == TFTCmdType.INVALID
-    assert TFTCommand('aug1 ').cmd_type == TFTCmdType.INVALID
+    match_cmd = lambda cmd, cmd_type, aug: \
+        cmd.cmd_type == cmd_type \
+            and cmd.selected_augment == aug
+    assert match_cmd(TFTCommand('aug1'), TFTCmdType.PICK_AUGMENT, 0)
+    assert match_cmd(TFTCommand('aug2'), TFTCmdType.PICK_AUGMENT, 1)
+    assert match_cmd(TFTCommand('aug3'), TFTCmdType.PICK_AUGMENT, 2)
+    assert match_cmd(TFTCommand('aug0'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand('aug4'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand('aug10'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand(' aug1'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand('aug1 '), TFTCmdType.INVALID, None)
 
 
 # TFTCmdType.LOCK_OR_UNLOCK: '^(lock|unlock)$',
@@ -81,36 +79,31 @@ def test_roll_shop_cmd():
 
 # TFTCmdType.SELL_UNIT: '^sellw[0-9]$',
 def test_sell_bench_unit_cmd():
-    assert TFTCommand('sellw0').cmd_type == TFTCmdType.SELL_UNIT \
-        and TFTCommand('sellw0').unit_to_sell == 'w0'
-    assert TFTCommand('sellw1').cmd_type == TFTCmdType.SELL_UNIT \
-        and TFTCommand('sellw1').unit_to_sell == 'w1'
-    assert TFTCommand('sellw2').cmd_type == TFTCmdType.SELL_UNIT \
-        and TFTCommand('sellw2').unit_to_sell == 'w2'
-    assert TFTCommand('sellw3').cmd_type == TFTCmdType.SELL_UNIT \
-        and TFTCommand('sellw3').unit_to_sell == 'w3'
-    assert TFTCommand('sellw4').cmd_type == TFTCmdType.SELL_UNIT \
-        and TFTCommand('sellw4').unit_to_sell == 'w4'
-    assert TFTCommand('sellw5').cmd_type == TFTCmdType.SELL_UNIT \
-        and TFTCommand('sellw5').unit_to_sell == 'w5'
-    assert TFTCommand('sellw6').cmd_type == TFTCmdType.SELL_UNIT \
-        and TFTCommand('sellw6').unit_to_sell == 'w6'
-    assert TFTCommand('sellw7').cmd_type == TFTCmdType.SELL_UNIT \
-        and TFTCommand('sellw7').unit_to_sell == 'w7'
-    assert TFTCommand('sellw8').cmd_type == TFTCmdType.SELL_UNIT \
-        and TFTCommand('sellw8').unit_to_sell == 'w8'
-    assert TFTCommand('sellw9').cmd_type == TFTCmdType.SELL_UNIT \
-        and TFTCommand('sellw9').unit_to_sell == 'w9'
-    assert TFTCommand(' sellw0').cmd_type == TFTCmdType.INVALID
-    assert TFTCommand('sellw0 ').cmd_type == TFTCmdType.INVALID
-    assert TFTCommand('sellw').cmd_type == TFTCmdType.INVALID
-    assert TFTCommand('sellwx').cmd_type == TFTCmdType.INVALID
+    match_cmd = lambda cmd, cmd_type, unit: \
+        cmd.cmd_type == cmd_type \
+            and cmd.unit_to_sell == unit
+    assert match_cmd(TFTCommand('sellw0'), TFTCmdType.SELL_UNIT, 'w0')
+    assert match_cmd(TFTCommand('sellw1'), TFTCmdType.SELL_UNIT, 'w1')
+    assert match_cmd(TFTCommand('sellw2'), TFTCmdType.SELL_UNIT, 'w2')
+    assert match_cmd(TFTCommand('sellw3'), TFTCmdType.SELL_UNIT, 'w3')
+    assert match_cmd(TFTCommand('sellw4'), TFTCmdType.SELL_UNIT, 'w4')
+    assert match_cmd(TFTCommand('sellw5'), TFTCmdType.SELL_UNIT, 'w5')
+    assert match_cmd(TFTCommand('sellw6'), TFTCmdType.SELL_UNIT, 'w6')
+    assert match_cmd(TFTCommand('sellw7'), TFTCmdType.SELL_UNIT, 'w7')
+    assert match_cmd(TFTCommand('sellw8'), TFTCmdType.SELL_UNIT, 'w8')
+    assert match_cmd(TFTCommand('sellw9'), TFTCmdType.SELL_UNIT, 'w9')
+    assert match_cmd(TFTCommand(' sellw0'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand('sellw0 '), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand('sellw'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand('sellwx'), TFTCmdType.INVALID, None)
 
 
 # TFTCmdType.PLACE_UNIT: '^(w[0-9]|[lbgr][1-7]){2}$',
 def test_place_unit_cmd():
-    valid_cmd = lambda cmd, unit, aim: cmd.cmd_type == TFTCmdType.PLACE_UNIT \
-        and cmd.unit_to_place == unit and cmd.unit_place_aim == aim
+    match_cmd = lambda cmd, cmd_type, unit, aim: \
+        cmd.cmd_type == cmd_type \
+            and cmd.unit_to_place == unit \
+            and cmd.unit_place_aim == aim
 
     bench = [f'w{i}' for i in range(10)]
     board = [f'{row}{i}' for row in ['l', 'b', 'g', 'r'] for i in range(1, 8)]
@@ -118,14 +111,55 @@ def test_place_unit_cmd():
     valid_perms = [(f1, f2) for f1 in all_fields for f2 in all_fields if f1 != f2]
     invalid_perms = [(f1, f1) for f1 in all_fields]
 
-    assert all(map(lambda perm: valid_cmd(
-        TFTCommand(f'{perm[0]}{perm[1]}'), perm[0], perm[1]), valid_perms))
-    assert all(map(lambda perm: not valid_cmd(
-        TFTCommand(f'{perm[0]}{perm[1]}'), perm[0], perm[1]), invalid_perms))
+    assert all(map(lambda perm: match_cmd(
+        TFTCommand(f'{perm[0]}{perm[1]}'), TFTCmdType.PLACE_UNIT, perm[0], perm[1]), valid_perms))
+    assert all(map(lambda perm: match_cmd(
+        TFTCommand(f'{perm[0]}{perm[1]}'), TFTCmdType.INVALID, None, None), invalid_perms))
 
-    assert TFTCommand(' w0w1').cmd_type == TFTCmdType.INVALID
-    assert TFTCommand('w0w1 ').cmd_type == TFTCmdType.INVALID
+    assert match_cmd(TFTCommand('a0a1'), TFTCmdType.INVALID, None, None)
+    assert match_cmd(TFTCommand(' w0w1'), TFTCmdType.INVALID, None, None)
+    assert match_cmd(TFTCommand('w0w1 '), TFTCmdType.INVALID, None, None)
 
 
 # TFTCmdType.COLLECT_ITEMS_OF_ROW: '^row[1-8]$',
-# TFTCmdType.ATTACH_ITEM: '^[a-j]w[0-9]$',
+def test_collect_items_of_row_cmd():
+    match_cmd = lambda cmd, cmd_type, row: \
+        cmd.cmd_type == cmd_type \
+            and cmd.row_to_collect == row
+    
+    # TFTCmdType.COLLECT_ITEMS_OF_ROW
+    assert match_cmd(TFTCommand('row1'), TFTCmdType.COLLECT_ITEMS_OF_ROW, 1)
+    assert match_cmd(TFTCommand('row2'), TFTCmdType.COLLECT_ITEMS_OF_ROW, 2)
+    assert match_cmd(TFTCommand('row3'), TFTCmdType.COLLECT_ITEMS_OF_ROW, 3)
+    assert match_cmd(TFTCommand('row4'), TFTCmdType.COLLECT_ITEMS_OF_ROW, 4)
+    assert match_cmd(TFTCommand('row5'), TFTCmdType.COLLECT_ITEMS_OF_ROW, 5)
+    assert match_cmd(TFTCommand('row6'), TFTCmdType.COLLECT_ITEMS_OF_ROW, 6)
+    assert match_cmd(TFTCommand('row7'), TFTCmdType.COLLECT_ITEMS_OF_ROW, 7)
+    assert match_cmd(TFTCommand('row8'), TFTCmdType.COLLECT_ITEMS_OF_ROW, 8)
+    assert match_cmd(TFTCommand('row0'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand('row9'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand(' row1'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand('row1 '), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand('row'), TFTCmdType.INVALID, None)
+    assert match_cmd(TFTCommand('rowx'), TFTCmdType.INVALID, None)
+
+# TFTCmdType.ATTACH_ITEM: '^[a-j](w[0-9]|[lbgr][1-7])$',
+def test_attach_item_to_unit_cmd():
+    match_cmd = lambda cmd, cmd_type, item, unit: \
+        cmd.cmd_type == cmd_type \
+            and cmd.item_to_atttach == item \
+            and cmd.unit_to_attach_to == unit
+
+    bench = [f'w{i}' for i in range(10)]
+    board = [f'{row}{i}' for row in ['l', 'b', 'g', 'r'] for i in range(1, 8)]
+    all_fields = bench + board
+    item_slots = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+    valid_perms = [(item, unit) for item in item_slots for unit in all_fields]
+
+    assert all(map(lambda perm: match_cmd(
+        TFTCommand(f'{perm[0]}{perm[1]}'), TFTCmdType.ATTACH_ITEM,
+                   perm[0].encode()[0] - 'a'.encode()[0], perm[1]), valid_perms))
+
+    assert match_cmd(TFTCommand('ia1'), TFTCmdType.INVALID, None, None)
+    assert match_cmd(TFTCommand(' iw1'), TFTCmdType.INVALID, None, None)
+    assert match_cmd(TFTCommand('iw1 '), TFTCmdType.INVALID, None, None)
