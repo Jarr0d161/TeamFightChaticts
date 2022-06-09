@@ -65,14 +65,16 @@ Following table shows all commands supported:
 | ----------------- | ------------------------------ | ----------------- |
 | shop(1-5)         | Buy unit in shop               | shop1             |
 | [field1][field2]  | Place / switch unit            | w1r5              |
-| sellw(1-9)        | Sell unit (from bench)         |                   |
+| sell(bench_field) | Sell unit (from bench)         |                   |
 | roll / reroll     | Reroll shop                    |                   |
 | lvl / lvlup       | Level up                       |                   |
 | collect           | Collect items with avatar      |                   |
 | row(1-8)          | Walk row with avatar           | row4              |
 | aug(1-3)          | Select augment                 | aug2              |
-| (itemslot)(field) | Run (upwards) in item carousel | bw3               |
+| (itemslot)(field) | Attach item to unit            | bw3               |
 | lock / unlock     | Lock / unlock store            |                   |
+
+With itemslots a-j, board fields (b/g/r/l)(1-7) and bench fields w(0-9).
 
 ## Contribution
 This is a community project, so please let us know if you've got a great idea!
