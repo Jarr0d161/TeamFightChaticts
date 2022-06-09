@@ -86,49 +86,49 @@ class TFTRemoteControl:
 
     def __post_init__(self):
         self.cmd_handlers = {
-            TFTCmdType.SHOP: self.handle_shop_cmd,
-            TFTCmdType.PICK_AUGMENT: self.handle_augment_cmd,
-            TFTCmdType.LOCK_OR_UNLOCK: self.handle_lock_or_unlock_cmd,
-            TFTCmdType.PICK_ITEM_CAROUSEL: self.handle_carousel_cmd,
-            TFTCmdType.COLLECT_ALL_ITEMS_DROPPED: self.handle_collect_cmd,
-            TFTCmdType.LEVELUP: self.handle_levelup_cmd,
-            TFTCmdType.ROLL_SHOP: self.handle_roll_cmd,
-            TFTCmdType.SELL_UNIT: self.handle_sell_bench_unit_cmd,
-            TFTCmdType.PLACE_UNIT: self.handle_place_unit_cmd,
-            TFTCmdType.COLLECT_ITEMS_OF_ROW: self.handle_collect_row_cmd,
-            TFTCmdType.ATTACH_ITEM: self.handle_attach_item_cmd,
+            TFTCmdType.SHOP: self._handle_shop_cmd,
+            TFTCmdType.PICK_AUGMENT: self._handle_augment_cmd,
+            TFTCmdType.LOCK_OR_UNLOCK: self._handle_lock_or_unlock_cmd,
+            TFTCmdType.PICK_ITEM_CAROUSEL: self._handle_carousel_cmd,
+            TFTCmdType.COLLECT_ALL_ITEMS_DROPPED: self._handle_collect_cmd,
+            TFTCmdType.LEVELUP: self._handle_levelup_cmd,
+            TFTCmdType.ROLL_SHOP: self._handle_roll_cmd,
+            TFTCmdType.SELL_UNIT: self._handle_sell_bench_unit_cmd,
+            TFTCmdType.PLACE_UNIT: self._handle_place_unit_cmd,
+            TFTCmdType.COLLECT_ITEMS_OF_ROW: self._handle_collect_row_cmd,
+            TFTCmdType.ATTACH_ITEM: self._handle_attach_item_cmd,
         }
 
     def execute_cmd(self, tft_cmd: TFTCommand):
         if tft_cmd.cmd_type in self.cmd_handlers:
             self.cmd_handlers[tft_cmd.cmd_type](tft_cmd.cmd)
 
-    def handle_shop_cmd(self, tft_cmd: TFTCommand):
+    def _handle_shop_cmd(self, tft_cmd: TFTCommand):
         self.mouse.click_at(self.positions.default_click_pos)
         unit = tft_cmd.selected_shop_unit
         shop_pos = self.positions.shop_list[unit]
         self.mouse.click_at(shop_pos)
 
-    def handle_augment_cmd(self, tft_cmd: TFTCommand):
+    def _handle_augment_cmd(self, tft_cmd: TFTCommand):
         self.mouse.click_at(self.positions.default_click_pos)
         augment_pos = self.positions.augment_list[tft_cmd.selected_augment]
         self.mouse.click_at(augment_pos)
 
-    def handle_lock_or_unlock_cmd(self, _: TFTCommand):
+    def _handle_lock_or_unlock_cmd(self, _: TFTCommand):
         self.mouse.click_at(self.positions.default_click_pos)
         self.mouse.click_at(self.positions.lock_button)
 
-    def handle_carousel_cmd(self, _: TFTCommand):
+    def _handle_carousel_cmd(self, _: TFTCommand):
         self.mouse.click_at(self.positions.default_click_pos)
         self.mouse.right_click_at(self.positions.carousel_aim)
 
-    def handle_collect_cmd(self, _: TFTCommand):
+    def _handle_collect_cmd(self, _: TFTCommand):
         self.mouse.click_at(self.positions.default_click_pos)
-        items = self.compute_item_drop_positions()
+        items = self._compute_item_drop_positions()
         if items:
-            self.collect_dropped_items_at(items)
+            self._collect_dropped_items_at(items)
 
-    def compute_item_drop_positions(self) -> list:
+    def _compute_item_drop_positions(self) -> list:
         offset = self.positions.item_offset
         box = self.positions.item_drop_region
         item_locs = self.screen_capture.capture_item_locations(box)
@@ -136,7 +136,7 @@ class TFTRemoteControl:
             return None
         return [(p[0] + box[0] + offset, p[1] + box[1] + offset) for p in item_locs]
 
-    def collect_dropped_items_at(self, locations: List[Tuple[int, int]]):
+    def _collect_dropped_items_at(self, locations: List[Tuple[int, int]]):
         # TODO: use Dijkstra algorithm to compute the shortest path
         #       instead of randomly walking between items
         locations.insert(0, self.positions.avatar_default)
@@ -150,7 +150,7 @@ class TFTRemoteControl:
 
         self.mouse.click_at(self.positions.default_click_pos)
 
-    def handle_levelup_cmd(self, tft_cmd: TFTCommand):
+    def _handle_levelup_cmd(self, tft_cmd: TFTCommand):
         level = self.screen_capture.capture_level()
         gold = self.screen_capture.capture_gold()
         if not gold or not level:
@@ -167,22 +167,22 @@ class TFTRemoteControl:
 
         self.mouse.click_at(self.positions.default_click_pos)
 
-    def handle_roll_cmd(self, _: TFTCommand):
+    def _handle_roll_cmd(self, _: TFTCommand):
         self.mouse.click_at(self.positions.roll_button)
         self.mouse.click_at(self.positions.default_click_pos)
 
-    def handle_sell_bench_unit_cmd(self, tft_cmd: TFTCommand):
+    def _handle_sell_bench_unit_cmd(self, tft_cmd: TFTCommand):
         self.mouse.click_at(self.positions.default_click_pos)
         unit_pos = self.positions.by_field(tft_cmd.unit_to_sell)
         self.mouse.drag(unit_pos, self.positions.shop_list[2])
 
-    def handle_place_unit_cmd(self, tft_cmd: TFTCommand):
+    def _handle_place_unit_cmd(self, tft_cmd: TFTCommand):
         self.mouse.click_at(self.positions.default_click_pos)
         origin_pos = self.positions.by_field(tft_cmd.unit_to_place)
         aim_pos = self.positions.by_field(tft_cmd.unit_place_aim)
         self.mouse.drag(origin_pos, aim_pos)
 
-    def handle_collect_row_cmd(self, tft_cmd: TFTCommand):
+    def _handle_collect_row_cmd(self, tft_cmd: TFTCommand):
         self.mouse.click_at(self.positions.default_click_pos)
         row = tft_cmd.row_to_collect
         start_pos = ((self.positions.board_locations[row])[0][0] - 100,
@@ -193,7 +193,7 @@ class TFTRemoteControl:
                    (self.positions.board_locations[row])[6][1])
         self.mouse.right_click_at(end_pos)
 
-    def handle_attach_item_cmd(self, tft_cmd: TFTCommand):
+    def _handle_attach_item_cmd(self, tft_cmd: TFTCommand):
         self.mouse.click_at(self.positions.default_click_pos)
         item_pos = self.positions.item_list[tft_cmd.item_to_atttach]
         unit_pos = self.positions.by_field(tft_cmd.unit_to_attach_to)

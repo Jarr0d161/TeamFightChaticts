@@ -39,7 +39,7 @@ class TwitchTFTChatbot:
             return
         self.state.pool = pool_size
         self.shutdown_requested = False
-        self.thread = threading.Thread(target=self.receive_twitch_messages)
+        self.thread = threading.Thread(target=self._receive_twitch_messages)
 
     def stop_bot(self):
         self.shutdown_requested = True
@@ -47,12 +47,12 @@ class TwitchTFTChatbot:
             sleep(0.1)
         self.shutdown_requested = False
 
-    def receive_twitch_messages(self):
+    def _receive_twitch_messages(self):
         self.connection.connect_to_server()
-        self.connection.register_message_listener(self.process_tft_cmd)
+        self.connection.register_message_listener(self._process_tft_cmd)
         self.connection.receive_messages_as_daemon(lambda: self.shutdown_requested)
 
-    def process_tft_cmd(self, tft_cmd: TFTCommand):
+    def _process_tft_cmd(self, tft_cmd: TFTCommand):
         self.state.update_state(tft_cmd)
         cmd_exec = self.state.cmd_to_execute
 
