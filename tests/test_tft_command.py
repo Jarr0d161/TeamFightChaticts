@@ -2,7 +2,7 @@ from teamfightchaticts.tft_command import TFTCommand, TFTCmdType
 
 
 # TFTCmdType.SHOP: '^shop[1-5]$',
-def test_shop_unit_cmd():
+def test_can_parse_shop_unit_cmd():
     match_cmd = lambda cmd, cmd_type, unit: \
         cmd.cmd_type == cmd_type \
             and cmd.selected_shop_unit == unit
@@ -19,7 +19,7 @@ def test_shop_unit_cmd():
 
 
 # TFTCmdType.PICK_AUGMENT: '^aug[1-3]$',
-def test_pick_augment_cmd():
+def test_can_parse_pick_augment_cmd():
     match_cmd = lambda cmd, cmd_type, aug: \
         cmd.cmd_type == cmd_type \
             and cmd.selected_augment == aug
@@ -34,7 +34,7 @@ def test_pick_augment_cmd():
 
 
 # TFTCmdType.LOCK_OR_UNLOCK: '^(lock|unlock)$',
-def test_lock_or_unlock_cmd():
+def test_can_parse_lock_or_unlock_cmd():
     assert TFTCommand('lock').cmd_type == TFTCmdType.LOCK_OR_UNLOCK
     assert TFTCommand('unlock').cmd_type == TFTCmdType.LOCK_OR_UNLOCK
     assert TFTCommand(' lock').cmd_type == TFTCmdType.INVALID
@@ -44,21 +44,21 @@ def test_lock_or_unlock_cmd():
 
 
 # TFTCmdType.PICK_ITEM_CAROUSEL: '^now$',
-def test_pick_item_carousel_cmd():
+def test_can_parse_pick_item_carousel_cmd():
     assert TFTCommand('now').cmd_type == TFTCmdType.PICK_ITEM_CAROUSEL
     assert TFTCommand(' now').cmd_type == TFTCmdType.INVALID
     assert TFTCommand('now ').cmd_type == TFTCmdType.INVALID
 
 
 # TFTCmdType.COLLECT_ALL_ITEMS_DROPPED: '^collect$',
-def test_collect_items_dropped_cmd():
+def test_can_parse_collect_items_dropped_cmd():
     assert TFTCommand('collect').cmd_type == TFTCmdType.COLLECT_ALL_ITEMS_DROPPED
     assert TFTCommand(' collect').cmd_type == TFTCmdType.INVALID
     assert TFTCommand('collect ').cmd_type == TFTCmdType.INVALID
 
 
 # TFTCmdType.LEVELUP: '^(lvl|lvlup)$',
-def test_levelup_cmd():
+def test_can_parse_levelup_cmd():
     assert TFTCommand('lvl').cmd_type == TFTCmdType.LEVELUP
     assert TFTCommand('lvlup').cmd_type == TFTCmdType.LEVELUP
     assert TFTCommand(' lvl').cmd_type == TFTCmdType.INVALID
@@ -68,7 +68,7 @@ def test_levelup_cmd():
 
 
 # TFTCmdType.ROLL_SHOP: '^(roll|reroll)$',
-def test_roll_shop_cmd():
+def test_can_parse_roll_shop_cmd():
     assert TFTCommand('roll').cmd_type == TFTCmdType.ROLL_SHOP
     assert TFTCommand('reroll').cmd_type == TFTCmdType.ROLL_SHOP
     assert TFTCommand(' roll').cmd_type == TFTCmdType.INVALID
@@ -78,7 +78,7 @@ def test_roll_shop_cmd():
 
 
 # TFTCmdType.SELL_UNIT: '^sellw[0-9]$',
-def test_sell_bench_unit_cmd():
+def test_can_parse_sell_bench_unit_cmd():
     match_cmd = lambda cmd, cmd_type, unit: \
         cmd.cmd_type == cmd_type \
             and cmd.unit_to_sell == unit
@@ -99,7 +99,7 @@ def test_sell_bench_unit_cmd():
 
 
 # TFTCmdType.PLACE_UNIT: '^(w[0-9]|[lbgr][1-7]){2}$',
-def test_place_unit_cmd():
+def test_can_parse_place_unit_cmd():
     match_cmd = lambda cmd, cmd_type, unit, aim: \
         cmd.cmd_type == cmd_type \
             and cmd.unit_to_place == unit \
@@ -122,7 +122,7 @@ def test_place_unit_cmd():
 
 
 # TFTCmdType.COLLECT_ITEMS_OF_ROW: '^row[1-8]$',
-def test_collect_items_of_row_cmd():
+def test_can_parse_collect_items_of_row_cmd():
     match_cmd = lambda cmd, cmd_type, row: \
         cmd.cmd_type == cmd_type \
             and cmd.row_to_collect == row
@@ -144,7 +144,7 @@ def test_collect_items_of_row_cmd():
     assert match_cmd(TFTCommand('rowx'), TFTCmdType.INVALID, None)
 
 # TFTCmdType.ATTACH_ITEM: '^[a-j](w[0-9]|[lbgr][1-7])$',
-def test_attach_item_to_unit_cmd():
+def test_can_parse_attach_item_to_unit_cmd():
     match_cmd = lambda cmd, cmd_type, item, unit: \
         cmd.cmd_type == cmd_type \
             and cmd.item_to_atttach == item \
