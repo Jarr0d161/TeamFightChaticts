@@ -52,6 +52,7 @@ class TwitchConnection:
         while success_text not in line:
             buffer = irc.recv(self.buffer_size).decode(self.encoding)
             line = buffer.split("\n")[-1]
+        # TODO: add a timeout exception if Twitch doesn't respond
 
         self.irc = irc
 

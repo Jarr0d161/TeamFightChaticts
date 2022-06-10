@@ -1,4 +1,4 @@
-import threading
+from threading import Thread
 from time import sleep
 from typing import Dict
 from dataclasses import dataclass, field
@@ -31,7 +31,7 @@ class TwitchTFTChatbot:
     connection: TwitchConnection
     tft_remote_control: TFTRemoteControl
     state: TwitchTFTChatbotState=TwitchTFTChatbotState()
-    thread: threading.Thread=field(init=False, default=None)
+    thread: Thread=field(init=False, default=None)
     shutdown_requested: bool=False
 
     def start_bot(self, pool_size: int):
@@ -39,11 +39,11 @@ class TwitchTFTChatbot:
             return
         self.state.pool = pool_size
         self.shutdown_requested = False
-        self.thread = threading.Thread(target=self._receive_twitch_messages)
+        self.thread = Thread(target=self._receive_twitch_messages)
 
     def stop_bot(self):
         self.shutdown_requested = True
-        while self.thread.is_alive():
+        while self.thread and self.thread.is_alive():
             sleep(0.1)
         self.shutdown_requested = False
 
@@ -56,7 +56,7 @@ class TwitchTFTChatbot:
         self.state.update_state(tft_cmd)
         cmd_exec = self.state.cmd_to_execute
 
-        # no command to execute
+        # invalid command
         if not cmd_exec:
             return
 
