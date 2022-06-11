@@ -3,11 +3,7 @@ from typing import Tuple, List, Callable, Protocol
 from dataclasses import dataclass, field
 
 from teamfightchaticts.settings import TwitchSettings
-
-
-@dataclass
-class TFTCommand(Protocol):
-    cmd: str
+from teamfightchaticts.tft_command import TFTCommand
 
 
 class IrcSocket(Protocol):
@@ -28,16 +24,17 @@ class IrcSocket(Protocol):
 class TwitchConnection:
     # pylint: disable=bare-except, broad-except
     settings: TwitchSettings
-    irc: IrcSocket=field(init=False, default=None)
-    msg_listeners: List[Callable[[TFTCommand], None]]=field(init=False, default_factory=lambda: [])
+    socket_factory: Callable[[], IrcSocket]=socket
     encoding: str='utf-8'
     buffer_size: int=1024
+    irc: IrcSocket=field(init=False, default=None)
+    msg_listeners: List[Callable[[TFTCommand], None]]=field(init=False, default_factory=lambda: [])
 
     def register_message_listener(self, listener: Callable[[TFTCommand], None]):
         self.msg_listeners.append(listener)
 
-    def connect_to_server(self, socket_factory: Callable[[], IrcSocket]=socket):
-        irc = socket_factory()
+    def connect_to_server(self):
+        irc = self.socket_factory()
         irc.connect((self.settings.server, self.settings.port))
 
         auth_msg = (
@@ -63,9 +60,8 @@ class TwitchConnection:
             return "PING :tmi.twitch.tv" in msg
 
         remainder = ''
-        while True:
+        while not is_term_requested():
             try:
-                # TODO: make sure this doesn't crash when processing all kinds of emoticons
                 readbuffer = self.irc.recv(self.buffer_size).decode(self.encoding)
             except:
                 readbuffer = ""
@@ -76,17 +72,16 @@ class TwitchConnection:
             # handle ping-pong messages to keep the connection alive
             if any(map(is_ping_msg, lines)):
                 self._send_twitch_pong()
-            lines = [line for line in lines if not is_ping_msg(line)]
+            lines = [line for line in lines if not line or not is_ping_msg(line)]
 
             messages = [TwitchConnection._parse_message_from_line(line) for line in lines]
             commands = [TFTCommand(cmd.lower()) for cmd in messages]
+            print(f'found {len(commands)} commands')
 
             for cmd in commands:
                 self._notify_listeners(cmd)
 
-            if is_term_requested():
-                self.irc.close()
-                break
+        self.irc.close()
 
     def _send_twitch_pong(self):
         msg = "PONG :tmi.twitch.tv\r\n".encode(self.encoding)
