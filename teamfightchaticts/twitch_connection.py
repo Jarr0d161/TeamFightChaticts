@@ -68,11 +68,12 @@ class TwitchConnection:
             lines = readbuffer.split("\r\n")
             lines[0] = remainder + lines[0]
             remainder = lines[-1]
+            print(f"processing '{lines}', remainder '{remainder}'")
 
             # handle ping-pong messages to keep the connection alive
             if any(map(is_ping_msg, lines)):
                 self._send_twitch_pong()
-            lines = [line for line in lines if not line or not is_ping_msg(line)]
+            lines = [line for line in lines if line and not is_ping_msg(line)]
 
             messages = [TwitchConnection._parse_message_from_line(line) for line in lines]
             commands = [TFTCommand(cmd.lower()) for cmd in messages]
