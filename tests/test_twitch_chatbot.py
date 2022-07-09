@@ -61,26 +61,26 @@ def test_should_fail_to_connect_to_chat_after_timeout():
 
 
 # # TODO: make this test work
-# def test_should_disconnect_from_chat_gracefully():
-#     conn_settings = TwitchSettings('twitch.tv', 6667, 'twitch_test', 'my_chatbot', 'somepwd')
-#     text_to_return = "End of /NAMES list\r\n" + msg_padding(' ', 1024) \
-#         + "\r\n::w3w4\r\n::lock\r\n::some text\r\n::lvl"
-#     connection = TwitchConnection(conn_settings, lambda: IrcSocketMock(text_to_return))
-#     msgs_received: List[TFTCommand] = []
-#     shutdown_requested = False
+def test_should_disconnect_from_chat_gracefully():
+    conn_settings = TwitchSettings('twitch.tv', 6667, 'twitch_test', 'my_chatbot', 'somepwd')
+    text_to_return = "End of /NAMES list\r\n" + msg_padding(' ', 1024) \
+        + "\r\n::w3w4\r\n::lock\r\n::some text\r\n::lvl\r\n"
+    connection = TwitchConnection(conn_settings, lambda: IrcSocketMock(text_to_return))
+    msgs_received: List[TFTCommand] = []
+    shutdown_requested = False
 
-#     def observe_twitch_chat():
-#         connection.connect_to_server()
-#         connection.register_message_listener(msgs_received.append)
-#         connection.receive_messages_as_daemon(lambda: shutdown_requested)
-#     conn_thread = Thread(target=observe_twitch_chat)
-#     conn_thread.start()
+    def observe_twitch_chat():
+        connection.connect_to_server()
+        connection.register_message_listener(msgs_received.append)
+        connection.receive_messages_as_daemon(lambda: shutdown_requested)
+    conn_thread = Thread(target=observe_twitch_chat)
+    conn_thread.start()
 
-#     sleep(1)
-#     shutdown_requested = True
-#     conn_thread.join(timeout=0.1)
-#     print()
-#     assert msgs_received == [TFTCommand('w3w4'), TFTCommand('lock'), TFTCommand('lvl')]
+    sleep(1)
+    shutdown_requested = True
+    conn_thread.join(timeout=0.1)
+
+    assert set(['w3w4', 'lock', 'lvl']) <= set(msgs_received)
 
 
 def test_line_buffer():
