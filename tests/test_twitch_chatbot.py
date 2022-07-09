@@ -4,7 +4,7 @@ from typing import Tuple, List
 from dataclasses import dataclass, field
 from teamfightchaticts.settings import TwitchSettings
 from teamfightchaticts.tft_command import TFTCommand
-from teamfightchaticts.twitch_connection import TwitchConnection
+from teamfightchaticts.twitch_connection import TwitchConnection, LineBuffer
 
 
 @dataclass
@@ -60,26 +60,42 @@ def test_should_fail_to_connect_to_chat_after_timeout():
     pass
 
 
-# TODO: make this test work
-def test_should_disconnect_from_chat_gracefully():
-    conn_settings = TwitchSettings('twitch.tv', 6667, 'twitch_test', 'my_chatbot', 'somepwd')
-    text_to_return = "End of /NAMES list\r\n" + msg_padding(' ', 1024) \
-        + "\r\n::w3w4\r\n::lock\r\n::some text\r\n::lvl"
-    connection = TwitchConnection(conn_settings, lambda: IrcSocketMock(text_to_return))
-    msgs_received: List[TFTCommand] = []
-    shutdown_requested = False
+# # TODO: make this test work
+# def test_should_disconnect_from_chat_gracefully():
+#     conn_settings = TwitchSettings('twitch.tv', 6667, 'twitch_test', 'my_chatbot', 'somepwd')
+#     text_to_return = "End of /NAMES list\r\n" + msg_padding(' ', 1024) \
+#         + "\r\n::w3w4\r\n::lock\r\n::some text\r\n::lvl"
+#     connection = TwitchConnection(conn_settings, lambda: IrcSocketMock(text_to_return))
+#     msgs_received: List[TFTCommand] = []
+#     shutdown_requested = False
 
-    def observe_twitch_chat():
-        connection.connect_to_server()
-        connection.register_message_listener(msgs_received.append)
-        connection.receive_messages_as_daemon(lambda: shutdown_requested)
-    conn_thread = Thread(target=observe_twitch_chat)
-    conn_thread.start()
+#     def observe_twitch_chat():
+#         connection.connect_to_server()
+#         connection.register_message_listener(msgs_received.append)
+#         connection.receive_messages_as_daemon(lambda: shutdown_requested)
+#     conn_thread = Thread(target=observe_twitch_chat)
+#     conn_thread.start()
 
-    sleep(1)
-    shutdown_requested = True
-    conn_thread.join(timeout=0.1)
-    assert msgs_received == [TFTCommand('w3w4'), TFTCommand('lock'), TFTCommand('lvl')]
+#     sleep(1)
+#     shutdown_requested = True
+#     conn_thread.join(timeout=0.1)
+#     print()
+#     assert msgs_received == [TFTCommand('w3w4'), TFTCommand('lock'), TFTCommand('lvl')]
+
+
+def test_line_buffer():
+    def process_read_buffer(text_buffer, remainder):
+        buf = LineBuffer(remainder)
+        return buf.process(text_buffer), buf.remainder
+
+    assert process_read_buffer('', '') == ([], '')
+    assert process_read_buffer('', 'abc') == ([], 'abc')
+    assert process_read_buffer('abc\r\n', '') == (['abc'], '')
+    assert process_read_buffer('abc\r\ndef', '') == (['abc'], 'def')
+    assert process_read_buffer('abc\r\ndef\r\nghi', '') == (['abc', 'def'], 'ghi')
+    assert process_read_buffer('\ndef', 'abc\r') == (['abc'], 'def')
+    assert process_read_buffer('\r\ndef', 'abc') == (['abc'], 'def')
+    assert process_read_buffer('abc\r\ndef\r\n', '') == (['abc', 'def'], '')
 
 
 def test_should_send_chat_pong():

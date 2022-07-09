@@ -51,7 +51,8 @@ class TwitchTFTChatbot:
         self.connection.register_message_listener(self._process_tft_cmd)
         self.connection.receive_messages_as_daemon(lambda: self.shutdown_requested)
 
-    def _process_tft_cmd(self, tft_cmd: TFTCommand):
+    def _process_tft_cmd(self, msg: str):
+        tft_cmd = TFTCommand(msg)
         self.state.update_state(tft_cmd)
         cmd_exec = self.state.cmd_to_execute
 
