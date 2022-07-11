@@ -1,4 +1,6 @@
 from socket import socket
+from time import sleep
+from threading import Thread
 from typing import Tuple, List, Callable, Protocol
 from dataclasses import dataclass, field
 
@@ -55,25 +57,38 @@ class TwitchConnection:
     socket_factory: Callable[[], IrcSocket]=socket
     encoding: str='utf-8'
     buffer_size: int=1024
+    timeout_seconds: int=60
     irc: IrcSocket=field(init=False, default=None)
-    msg_listeners: List[Callable[[str], None]]=field(init=False, default_factory=lambda: [])
+    msg_listeners: List[Callable[[str], None]]=field(init=False, default_factory=list)
 
     def register_message_listener(self, listener: Callable[[str], None]):
         self.msg_listeners.append(listener)
 
     def connect_to_server(self):
-        irc = self._create_irc_socket()
-        self._send_auth_message(irc)
+        websock = self.socket_factory()
 
-        # TODO: add a timeout exception if Twitch doesn't respond
-        self._wait_for_auth_complete()
+        def connect():
+            try:
+                websock.connect((self.settings.server, self.settings.port))
+                self._send_auth_message(websock)
+                self._wait_for_auth_complete()
+            except:
+                pass
 
-        self.irc = irc
+        conn_thread = Thread(target=connect)
+        conn_thread.start()
+        timeout_thread = Thread(target=lambda: sleep(self.timeout_seconds))
+        timeout_thread.daemon = True
+        timeout_thread.start()
 
-    def _create_irc_socket(self):
-        irc = self.socket_factory()
-        irc.connect((self.settings.server, self.settings.port))
-        return irc
+        while timeout_thread.is_alive() and conn_thread.is_alive():
+            sleep(0.01)
+
+        if not conn_thread.is_alive():
+            conn_thread.join(0.01)
+            self.irc = websock
+        elif not timeout_thread.is_alive():
+            conn_thread.join(0.01)
 
     def _send_auth_message(self, irc: IrcSocket):
         auth_msg = (

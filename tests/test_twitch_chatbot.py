@@ -56,8 +56,12 @@ def test_should_connect_to_chat():
 
 
 def test_should_fail_to_connect_to_chat_after_timeout():
-    # TODO: implement timeout functionality
-    pass
+    conn_settings = TwitchSettings('twitch.tv', 6667, 'twitch_test', 'my_chatbot', 'somepwd')
+    connection = TwitchConnection(conn_settings, lambda: IrcSocketMock(''), timeout_seconds=0.5)
+    connection.connect_to_server()
+    sleep(0.6)
+    print(connection)
+    assert connection.irc is None
 
 
 # # TODO: make this test work
