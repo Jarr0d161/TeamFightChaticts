@@ -1,6 +1,4 @@
 from socket import socket
-from time import sleep
-from threading import Thread
 from typing import Tuple, List, Callable, Protocol
 from dataclasses import dataclass, field
 
@@ -67,28 +65,11 @@ class TwitchConnection:
     def connect_to_server(self):
         websock = self.socket_factory()
 
-        def connect():
-            try:
-                websock.connect((self.settings.server, self.settings.port))
-                self._send_auth_message(websock)
-                self._wait_for_auth_complete()
-            except:
-                pass
+        websock.connect((self.settings.server, self.settings.port))
+        self._send_auth_message(websock)
+        self._wait_for_auth_complete()
 
-        conn_thread = Thread(target=connect)
-        conn_thread.start()
-        timeout_thread = Thread(target=lambda: sleep(self.timeout_seconds))
-        timeout_thread.daemon = True
-        timeout_thread.start()
-
-        while timeout_thread.is_alive() and conn_thread.is_alive():
-            sleep(0.01)
-
-        if not conn_thread.is_alive():
-            conn_thread.join(0.01)
-            self.irc = websock
-        elif not timeout_thread.is_alive():
-            conn_thread.join(0.01)
+        self.irc = websock
 
     def _send_auth_message(self, irc: IrcSocket):
         auth_msg = (
