@@ -55,13 +55,14 @@ def test_should_connect_to_chat():
     assert not socket.closed and socket.text_received == exp_text_buffer
 
 
-def test_should_fail_to_connect_to_chat_after_timeout():
-    conn_settings = TwitchSettings('twitch.tv', 6667, 'twitch_test', 'my_chatbot', 'somepwd')
-    connection = TwitchConnection(conn_settings, lambda: IrcSocketMock(''), timeout_seconds=0.5)
-    connection.connect_to_server()
-    sleep(0.6)
-    print(connection)
-    assert connection.irc is None
+# def test_should_fail_to_connect_to_chat_after_timeout():
+#     # TODO: use asyncio for this feature. threads are very clunky to achieve this.
+#     conn_settings = TwitchSettings('twitch.tv', 6667, 'twitch_test', 'my_chatbot', 'somepwd')
+#     connection = TwitchConnection(conn_settings, lambda: IrcSocketMock(''), timeout_seconds=0.5)
+#     connection.connect_to_server()
+#     sleep(0.6)
+#     print(connection)
+#     assert connection.irc is None
 
 
 # # TODO: make this test work
@@ -103,16 +104,24 @@ def test_line_buffer():
 
 
 def test_should_send_chat_pong():
-    "PING :tmi.twitch.tv"
-    pass
+    conn_settings = TwitchSettings('twitch.tv', 6667, 'twitch_test', 'my_chatbot', 'somepwd')
+    text_to_return = "End of /NAMES list\r\n" + msg_padding(' ', 1024) \
+        + "\r\n::w3w4\r\n::lock\r\n::some text\r\nPING :tmi.twitch.tv\r\n::lvl\r\n"
+    connection = TwitchConnection(conn_settings, lambda: IrcSocketMock(text_to_return))
+    shutdown_requested = False
 
+    def observe_twitch_chat():
+        connection.connect_to_server()
+        connection.receive_messages_as_daemon(lambda: shutdown_requested)
+    conn_thread = Thread(target=observe_twitch_chat)
+    conn_thread.start()
 
-def test_should_parse_tft_commands_from_chat_with_single_recv():
-    pass
+    sleep(1)
+    shutdown_requested = True
+    conn_thread.join(timeout=0.1)
 
-
-def test_should_parse_tft_commands_from_chat_replay_with_overlapping_recv_buffes():
-    pass
+    socket: IrcSocketMock = connection.irc
+    assert 'PONG :tmi.twitch.tv' in socket.text_received
 
 
 # TODO: test the chatbot with all kinds of emoticons and make sure it doesn't crash
