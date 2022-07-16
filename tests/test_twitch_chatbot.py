@@ -47,11 +47,11 @@ def msg_padding(sequence: str, repetitions: int, separator: str=''):
 
 def test_should_connect_to_chat():
     conn_settings = TwitchSettings('foobar.com', 6667, 'twitch_test', 'my_chatbot', 'somepwd')
-    text_to_return = "End of /NAMES list"
+    text_to_return = "End of /NAMES list\r\n"
     connection = TwitchConnection(conn_settings, lambda: IrcSocketMock(text_to_return))
     connection.connect_to_server()
     exp_text_buffer = 'PASS somepwd\nNICK my_chatbot\nJOIN #twitch_test\n'
-    socket: IrcSocketMock = connection.irc
+    socket: IrcSocketMock = connection.websocket
     assert not socket.closed and socket.text_received == exp_text_buffer
 
 
@@ -120,7 +120,7 @@ def test_should_send_chat_pong():
     shutdown_requested = True
     conn_thread.join(timeout=0.1)
 
-    socket: IrcSocketMock = connection.irc
+    socket: IrcSocketMock = connection.websocket
     assert 'PONG :tmi.twitch.tv' in socket.text_received
 
 

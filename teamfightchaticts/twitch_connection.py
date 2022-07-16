@@ -56,20 +56,20 @@ class TwitchConnection:
     encoding: str='utf-8'
     buffer_size: int=1024
     timeout_seconds: int=60
-    irc: IrcSocket=field(init=False, default=None)
+    websocket: IrcSocket=field(init=False, default=None)
     msg_listeners: List[Callable[[str], None]]=field(init=False, default_factory=list)
 
     def register_message_listener(self, listener: Callable[[str], None]):
         self.msg_listeners.append(listener)
 
     def connect_to_server(self):
-        websock = self.socket_factory()
+        websocket = self.socket_factory()
 
-        websock.connect((self.settings.server, self.settings.port))
-        self._send_auth_message(websock)
-        self._wait_for_auth_complete()
+        websocket.connect((self.settings.server, self.settings.port))
+        self._send_auth_message(websocket)
+        self._wait_for_auth_complete(websocket)
 
-        self.irc = websock
+        self.websocket = websocket
 
     def _send_auth_message(self, irc: IrcSocket):
         auth_msg = (
@@ -79,23 +79,23 @@ class TwitchConnection:
         )
         irc.send(auth_msg.encode(self.encoding))
 
-    def _wait_for_auth_complete(self):
-        success_text = "End of /NAMES list"
+    def _wait_for_auth_complete(self, websocket: IrcSocket):
+
         def found_end_of_auth(lines: List[str]) -> bool:
-            return not any(filter(lambda line: success_text in line, lines))
+            success_text = "End of /NAMES list"
+            return any(filter(lambda line: success_text in line, lines))
 
         lines = []
         line_buffer = LineBuffer()
         while not found_end_of_auth(lines):
-            buffer_text = self._read_next_buffer()
-            lines = line_buffer.process(buffer_text)
+            lines = line_buffer.process(self._read_next_buffer(websocket))
 
     def receive_messages_as_daemon(self, is_term_requested: Callable[[], bool]=lambda: False):
         self._request_listening_to_twitch_chat()
         line_buffer = LineBuffer()
 
         while not is_term_requested():
-            buffer = self._read_next_buffer()
+            buffer = self._read_next_buffer(self.websocket)
             lines = line_buffer.process(buffer)
 
             # handle ping-pong messages to keep the connection alive
@@ -107,20 +107,20 @@ class TwitchConnection:
             for msg in messages:
                 self._notify_listeners(msg)
 
-        self.irc.close()
+        self.websocket.close()
 
     def _request_listening_to_twitch_chat(self):
-        self.irc.send("CAP REQ :twitch.tv/tags\r\n".encode(self.encoding))
+        self.websocket.send("CAP REQ :twitch.tv/tags\r\n".encode(self.encoding))
 
-    def _read_next_buffer(self) -> str:
+    def _read_next_buffer(self, websocket: IrcSocket) -> str:
         try:
-            return self.irc.recv(self.buffer_size).decode(self.encoding)
+            return websocket.recv(self.buffer_size).decode(self.encoding)
         except:
             return ''
 
     def _send_twitch_pong(self):
         msg = "PONG :tmi.twitch.tv\r\n".encode(self.encoding)
-        self.irc.send(msg)
+        self.websocket.send(msg)
 
     def _notify_listeners(self, msg: str):
         for listener in self.msg_listeners:
