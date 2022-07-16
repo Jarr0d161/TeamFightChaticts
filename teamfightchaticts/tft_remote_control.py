@@ -30,7 +30,6 @@ class MouseControl(Protocol):
 
 class TFTRemoteControlPositions:
     # pylint: disable=too-many-instance-attributes
-    # TODO: compute the positions as properties depending on the screen resolution
     def __init__(self, settings: Dict[str, Any]):
         self.row_1 = settings['row_1']
         self.row_2 = settings['row_2']
@@ -137,8 +136,6 @@ class TFTRemoteControl:
         return [(p[0] + box[0] + offset, p[1] + box[1] + offset) for p in item_locs]
 
     def _collect_dropped_items_at(self, locations: List[Tuple[int, int]]):
-        # TODO: use Dijkstra algorithm to compute the shortest path
-        #       instead of randomly walking between items
         locations.insert(0, self.positions.avatar_default)
         locations.append(self.positions.avatar_default)
 

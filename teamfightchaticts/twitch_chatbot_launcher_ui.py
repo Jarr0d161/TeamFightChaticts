@@ -15,7 +15,6 @@ class TwitchChatbot(Protocol):
 class TwitchChatbotLauncherUI(tk.Frame):
     # pylint: disable=too-many-ancestors, too-many-instance-attributes
     # pylint: disable=keyword-arg-before-vararg, too-many-arguments
-    # TODO: get rid of inheritance if possible!!!
     def __init__(self, chatbot: TwitchChatbot, ui_settings: Dict[str, Any],
                  parent: tk.Tk=tk.Tk(), width=518, height=180, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
@@ -28,7 +27,6 @@ class TwitchChatbotLauncherUI(tk.Frame):
         self.parent = TwitchChatbotLauncherUI._init_parent(
             parent, self.ui_settings['ui_title'], width, height)
         self.poolsize_input = self._load_poolsize_input()
-        self._load_launch_usage_label()
         self._load_auth_usage_label()
         self._load_poolsize_label()
         self.start_stop_button = self._load_start_stop_button()
@@ -58,16 +56,6 @@ class TwitchChatbotLauncherUI(tk.Frame):
         poolsize_input.insert(0, str(self.pool))
         poolsize_input.place(x=220, y=110, width=82, height=30)
         return poolsize_input
-
-    def _load_launch_usage_label(self):
-        # TODO: this shouldn't be required, usage of a 'start' button is obvious
-        launch_usage = tk.Label(self.parent)
-        launch_usage["bg"] = "#878787"
-        launch_usage["font"] = tkFont.Font(family='arial',size=9)
-        launch_usage["fg"] = "#ffffff"
-        launch_usage["justify"] = "center"
-        launch_usage["text"] = self.ui_settings["launch_usage"]
-        launch_usage.place(x=20, y=30, width=476, height=30)
 
     def _load_auth_usage_label(self):
         auth_usage_label = tk.Label(self.parent)
